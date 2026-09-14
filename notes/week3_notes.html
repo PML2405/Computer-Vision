@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Vision — Week 3 Handwritten Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<!-- KaTeX for crisp math inside the hand-drawn boxes -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "\\[", right: "\\]", display: true},
+          {left: "$", right: "$", display: false},
+          {left: "\\(", right: "\\)", display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+<style>
+  :root{
+    --paper:#FBF7EC; --rule:#E2D9C4; --margin:#F3B8B0;
+    --ink:#2E2A3D; --ink-soft:#5b5678;
+    --yellow:#FFE98A; --pink:#FFB8CE; --mint:#A9E8CE; --blue:#A9D4F5;
+    --coral:#FF7A5C; --tape1:#F6C89F; --tape2:#CBE7DE; --tape3:#F3AEBB;
+  }
+  * { box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background:#DDD6C4; }
+  body{
+    font-family:'Kalam', cursive; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:28px 12px 90px;
+  }
+  svg.defs{ position:absolute; width:0; height:0; }
+
+  .page{
+    position:relative; width:100%; max-width:920px;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 33px, var(--rule) 34px, var(--paper) 35px);
+    background-color:var(--paper);
+    border-radius:6px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.25), 0 2px 0 rgba(0,0,0,.05);
+    padding:46px 40px 46px 74px;
+    overflow:hidden;
+    margin-bottom:30px;
+  }
+  .margin-rule{ position:absolute; top:0; bottom:0; left:50px; width:2px; background:var(--margin); opacity:.75; }
+  .doodle{ position:absolute; opacity:.85; pointer-events:none; }
+
+  /* ---------- week cover ---------- */
+  .cover{ text-align:center; padding:14px 10px 8px; }
+  .cover .kicker{ font-family:'Kalam',cursive; font-size:16px; color:var(--ink-soft); letter-spacing:1px; }
+  .cover h1{
+    font-family:'Caveat',cursive; font-weight:700; font-size:72px;
+    margin:2px 0 0; line-height:.95; color:var(--ink);
+  }
+  .cover .sub{ font-size:19px; color:var(--ink-soft); margin-top:8px; }
+  .cover .prof{ font-size:15.5px; color:var(--ink-soft); margin-top:4px; font-style:italic;}
+
+  /* ---------- table of contents ---------- */
+  .toc{ margin:22px auto 6px; max-width:640px; }
+  .toc .toc-card{
+    border:2.6px solid var(--ink); border-radius:225px 15px 225px 15px/15px 225px 15px 225px;
+    filter:url(#rough); background:#FFFEFA; padding:16px 24px;
+  }
+  .toc h3{ font-family:'Caveat',cursive; font-size:26px; margin:0 0 8px; }
+  .toc ol{ margin:0; padding-left:22px; font-size:17px; }
+  .toc li{ margin:6px 0; }
+  .toc a{ color:var(--ink); text-decoration:none; border-bottom:2px dotted var(--ink-soft); }
+  .toc a:hover{ background:var(--yellow); }
+
+  /* ---------- lecture divider ---------- */
+  .lec-divider{
+    margin:14px 0 6px; padding:14px 22px; position:relative;
+    background:var(--ink); color:var(--paper);
+    border-radius:16px 10px 16px 10px/10px 16px 10px 16px;
+    filter:url(#rough); transform:rotate(-.4deg);
+  }
+  .lec-divider .lno{ font-family:'Kalam',cursive; font-size:14px; letter-spacing:2px; opacity:.85; }
+  .lec-divider h2{ font-family:'Caveat',cursive; font-weight:700; font-size:40px; margin:2px 0 0; line-height:1; }
+  .lec-divider .lsub{ font-size:14.5px; opacity:.9; margin-top:6px; }
+
+  /* ---------- headings ---------- */
+  h2.section{
+    font-family:'Caveat', cursive; font-weight:700; font-size:31px;
+    margin:32px 0 8px 0; display:flex; align-items:center; gap:10px;
+  }
+  h2.section .num{
+    font-family:'Kalam',cursive; font-size:15px; background:var(--ink); color:var(--paper);
+    border-radius:50%; width:27px; height:27px; min-width:27px;
+    display:flex; align-items:center; justify-content:center; transform:rotate(-6deg);
+  }
+  h3.sub{ font-family:'Caveat',cursive; font-size:24px; margin:18px 0 4px; color:var(--ink); }
+
+  p{ font-size:17px; line-height:1.62; margin:8px 0; }
+  ul.notes, ol.notes{ font-size:16.5px; line-height:1.55; }
+  ul.notes li, ol.notes li{ margin:5px 0; }
+  .small{ font-size:14.5px; color:var(--ink-soft); }
+  b, strong{ color:#231f33; }
+
+  /* ---------- sticky note ---------- */
+  .sticky{
+    position:relative; background:var(--yellow); padding:18px 20px 20px;
+    border-radius:2px 14px 3px 12px / 10px 3px 14px 4px; filter:url(#rough);
+    transform:rotate(-1.1deg); box-shadow: 4px 6px 10px rgba(0,0,0,.14);
+    margin:18px auto 30px; max-width:660px;
+  }
+  .sticky.blue{ background:var(--blue); } .sticky.mint{ background:var(--mint); } .sticky.pink{ background:var(--pink); }
+  .sticky::before{
+    content:""; position:absolute; top:-14px; left:50%; width:48px; height:20px;
+    background:var(--tape3); opacity:.85; transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 3px rgba(0,0,0,.15);
+  }
+  .sticky p{ margin:4px 0; font-size:16.5px; }
+  .sticky .lead{ font-family:'Caveat', cursive; font-size:24px; font-weight:700; margin-bottom:6px; }
+
+  /* ---------- generic sketch box ---------- */
+  .sketch-box{
+    position:relative; border:2.6px solid var(--ink);
+    border-radius:225px 15px 225px 15px/15px 225px 15px 225px; filter:url(#rough);
+    padding:16px 22px; background:#FFFEFA; margin:16px 0;
+  }
+  .sketch-box.tint-blue{ background:#EFF7FF; } .sketch-box.tint-mint{ background:#F1FAF5; }
+  .sketch-box.tint-pink{ background:#FFF3F6; } .sketch-box.tint-yellow{ background:#FFFBEC; }
+  .sketch-box .label{
+    display:inline-block; font-family:'Caveat',cursive; font-size:22px; font-weight:700;
+    margin-bottom:2px;
+  }
+  .def-term{ font-weight:700; color:#231f33; }
+
+  /* highlighter marker span */
+  mark{ background:linear-gradient(180deg, transparent 55%, var(--pink) 55%); padding:0 2px; }
+  mark.yellow{ background:linear-gradient(180deg, transparent 55%, var(--yellow) 55%); }
+  mark.mint{ background:linear-gradient(180deg, transparent 55%, var(--mint) 55%); }
+  mark.blue{ background:linear-gradient(180deg, transparent 55%, var(--blue) 55%); }
+
+  /* ---------- equation cards (KaTeX inside) ---------- */
+  .eq-card{ display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; justify-content:center; margin:18px 0; }
+  .index-card{
+    background:#fff; border:2.5px solid var(--ink); filter:url(#rough);
+    border-radius:8px 16px 10px 18px/14px 8px 16px 10px; padding:14px 22px;
+    min-width:230px; box-shadow:3px 5px 0 rgba(0,0,0,.08); transform:rotate(-0.5deg);
+  }
+  .index-card .cap{ font-family:'Caveat',cursive; font-size:20px; text-align:center; margin:0 0 6px; color:var(--ink-soft); }
+  .index-card .katex{ font-size:1.12em; }
+  .eqn{ text-align:center; margin:14px 0; }
+  .eqn .katex-display{ margin:.3em 0; }
+  .eqn-note{ text-align:center; font-size:14.5px; color:var(--ink-soft); margin-top:2px; }
+
+  /* speech bubble — "read the formula out loud" */
+  .bubble{
+    position:relative; background:var(--blue); border:2.4px solid var(--ink); filter:url(#rough);
+    border-radius:22px; padding:13px 20px; max-width:560px; margin:16px auto; font-size:16.5px;
+  }
+  .bubble:after{
+    content:""; position:absolute; left:40px; bottom:-16px; width:0; height:0;
+    border:14px solid transparent; border-top-color:var(--blue); filter:drop-shadow(0 2px 0 var(--ink));
+  }
+  .bubble .say{ font-family:'Caveat',cursive; font-size:20px; font-weight:700; }
+
+  /* worked-example card */
+  .worked{
+    border:2.6px solid var(--ink); border-left:10px solid var(--coral); border-radius:12px;
+    filter:url(#rough); background:#FFFDF6; padding:14px 20px; margin:18px 0;
+  }
+  .worked .tag{
+    font-family:'Caveat',cursive; font-size:22px; font-weight:700; color:#B4590E;
+    display:block; margin-bottom:4px;
+  }
+  .worked .illus{ font-size:13px; color:var(--ink-soft); font-style:italic; }
+  .worked ol{ padding-left:20px; } .worked li{ margin:7px 0; font-size:16px; }
+
+  /* ---------- figure cards (REAL slide figures) ---------- */
+  .fig{
+    border:2.4px solid var(--ink); background:#fff; filter:url(#rough);
+    border-radius:12px 14px 12px 14px; padding:10px 10px 8px; margin:16px 0; transform:rotate(-.3deg);
+  }
+  .fig img{ width:100%; height:auto; display:block; border-radius:4px; }
+  .fig figcaption{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:7px; font-style:italic; }
+  .fig-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin:16px 0; align-items:end; }
+  .fig-row .fig{ margin:0; }
+  .fig .pin{ display:inline-block; background:var(--tape2); height:16px; width:44px; transform:rotate(-4deg); margin:0 auto 4px; opacity:.85; }
+
+  /* diagram card (redrawn inline SVG) */
+  .diagram{
+    border:2.6px solid var(--ink); filter:url(#rough); background:#fff;
+    border-radius:18px 10px 18px 10px/10px 18px 10px 18px; padding:14px 16px 10px; margin:18px 0;
+  }
+  .diagram h4{ font-family:'Caveat',cursive; font-size:22px; margin:0 0 6px; }
+  .diagram svg{ width:100%; height:auto; display:block; }
+  .diagram .cap{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:6px; font-style:italic; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:680px){ .two-col{ grid-template-columns:1fr; } }
+
+  /* ---------- comparison table ---------- */
+  table.hand{ width:100%; border-collapse:collapse; margin:18px 0; font-size:15.5px; }
+  table.hand th, table.hand td{ border:2px solid var(--ink); padding:9px 10px; text-align:left; vertical-align:top; }
+  table.hand thead th{ background:var(--yellow); font-family:'Caveat',cursive; font-size:19px; }
+  table.hand tbody tr:nth-child(odd) td:first-child{ background:#fdf6e6; }
+
+  /* ---------- takeaway banner ---------- */
+  .banner{
+    position:relative; background:var(--coral); color:#FFF7F0; border-radius:16px; filter:url(#rough);
+    padding:20px 26px; text-align:center; margin:32px 0 24px; transform:rotate(0.35deg);
+  }
+  .banner h3{ font-family:'Caveat', cursive; font-size:29px; margin:0 0 6px; line-height:1.22; }
+  .banner p{ color:#FFF0E8; font-size:15px; margin:0; }
+
+  /* ---------- quiz card ---------- */
+  .quiz{
+    border:2.6px dashed var(--ink); border-radius:14px; padding:18px 22px; background:#FFFDF3;
+    margin:22px 0 6px; position:relative;
+  }
+  .quiz:before{
+    content:"✎ quick check"; position:absolute; top:-14px; left:18px; background:var(--paper);
+    padding:0 8px; font-family:'Caveat', cursive; font-size:20px; font-weight:700;
+  }
+  .quiz ol{ margin:6px 0 0; padding-left:22px; font-size:16px; }
+  .quiz li{ margin:11px 0; }
+  .quiz .ans{ color:#2E7D53; font-weight:700; } .quiz .ans:before{ content:"→ "; }
+
+  .signoff{ text-align:right; font-family:'Caveat', cursive; font-size:20px; color:var(--ink-soft); margin-top:24px; }
+  .backtop{ display:block; text-align:right; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-top:6px; }
+  .backtop:hover{ color:var(--coral); }
+
+  @media (max-width:640px){
+    .page{ padding:36px 18px 36px 46px; } .margin-rule{ left:26px; }
+    .cover h1{ font-size:52px; } .lec-divider h2{ font-size:30px; } .two-col{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs">
+  <defs>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/></filter>
+    <filter id="rough2"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="14" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6"/></filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#2E2A3D" stroke-width="1.5"/></marker>
+    <marker id="arrowc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#FF7A5C" stroke-width="1.6"/></marker>
+  </defs>
+</svg>
+
+<!-- WEEK COVER + TOC -->
+<div class="page" id="top">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:18px; right:34px;" width="34" height="34" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+  <svg class="doodle" style="top:70px; left:60px;" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.8"/></svg>
+  <div class="cover">
+    <div class="kicker">COMPUTER VISION &middot; NPTEL &middot; IIT KHARAGPUR</div>
+    <h1>Week 3</h1>
+    <div class="sub"><b>Camera Geometry</b> &mdash; single-view</div>
+    <div class="prof">Prof. Jayanta Mukhopadhyay &middot; Lectures 11&ndash;15</div>
+  </div>
+  <div class="toc"><div class="toc-card">
+    <h3>&#128210; what's inside this week</h3>
+    <ol>
+      <li><a href="#l11">Lecture 11 &mdash; Camera Geometry &middot; Part I</a><br><span class="small">pinhole model, perspective projection, P = K[R|t]</span></li>
+      <li><a href="#l12">Lecture 12 &mdash; Camera Geometry &middot; Part II</a><br><span class="small">the calibration matrix K, slicing P, estimating P by DLT</span></li>
+      <li><a href="#l13">Lecture 13 &mdash; Camera Geometry &middot; Part III</a><br><span class="small">reading centre/vanishing points/principal point off P, RQ</span></li>
+      <li><a href="#l14">Lecture 14 &mdash; Camera Geometry &middot; Part IV</a><br><span class="small">worked problems, the affine camera, imaging a plane/line, zoom</span></li>
+      <li><a href="#l15">Lecture 15 &mdash; Camera Geometry &middot; Part V</a><br><span class="small">conjugate-rotation homography, vanishing points &amp; lines, summary</span></li>
+    </ol>
+  </div></div>
+</div>
+
+<div class="page" id="l11">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 11</div>
+    <h2>Camera Geometry — Part I</h2>
+    <div class="lsub">the pinhole model · perspective projection as a matrix · building the 3×4 camera matrix P = K[R|t]</div>
+  </div>
+
+  <div class="sticky blue">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>A camera is a machine that <b>flattens a 3-D world onto a 2-D image</b>. This lecture writes that flattening as a single matrix multiply: <mark class="blue">$\mathbf x = P\mathbf X$</mark>, where $P$ is a $3\times4$ matrix built from what the camera <i>is</i> ($K$) and where it <i>sits</i> ($R,\mathbf t$).</p>
+    <p class="small">Get $P$ and you can predict exactly where any world point lands in the photo. The catch: you can't run it backwards (a pixel came from a whole <i>ray</i>, not one point). 📸</p>
+  </div>
+
+  <!-- 1 pinhole -->
+  <h2 class="section"><span class="num">1</span> the pinhole camera &amp; perspective projection</h2>
+  <p>Put the <span class="def-term">camera centre</span> (centre of projection) at the origin. A world point $P=(X,Y,Z)$ sends a ray through the centre; where that ray hits the <span class="def-term">image plane</span> (a distance $f$ = the <span class="def-term">focal length</span> away) is the image point $(x,y)$. By <b>similar triangles</b>:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">perspective projection</div>
+      <div class="eqn" style="margin:6px 0;">$$ x=f\,\frac{X}{Z},\qquad y=f\,\frac{Y}{Z} $$</div>
+    </div>
+  </div>
+  <div class="diagram">
+    <h4>similar triangles give x = fX/Z</h4>
+    <svg viewBox="0 0 420 180">
+      <g font-family="Kalam" font-size="12" fill="var(--ink)">
+        <circle cx="60" cy="120" r="4" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.6"/><text x="34" y="118">centre O</text>
+        <line x1="60" y1="120" x2="60" y2="30" stroke="var(--ink)" stroke-width="1"/>
+        <line x1="60" y1="120" x2="400" y2="120" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3"/><text x="360" y="134" font-size="11">Z (optical axis)</text>
+        <!-- image plane -->
+        <line x1="130" y1="55" x2="130" y2="150" stroke="var(--blue)" stroke-width="2"/><text x="100" y="50" font-size="11">image plane (f)</text>
+        <!-- scene point + ray -->
+        <circle cx="330" cy="45" r="4" fill="var(--pink)" stroke="var(--ink)" stroke-width="1.4"/><text x="336" y="42">P=(X,Y,Z)</text>
+        <line x1="60" y1="120" x2="330" y2="45" stroke="var(--coral)" stroke-width="1.7" marker-end="url(#arrowc)"/>
+        <circle cx="130" cy="99" r="3.5" fill="var(--coral)" stroke="var(--ink)" stroke-width="1.2"/><text x="134" y="95" fill="var(--coral)" font-size="11">p=(x,y)</text>
+        <line x1="330" y1="45" x2="330" y2="120" stroke="var(--ink)" stroke-width="0.8" stroke-dasharray="2 2"/>
+        <line x1="130" y1="99" x2="130" y2="120" stroke="var(--ink)" stroke-width="0.8" stroke-dasharray="2 2"/>
+      </g>
+    </svg>
+    <div class="cap">Big triangle (O, P, its foot) ∼ small triangle (O, p, its foot) ⇒ $x/f = X/Z$.</div>
+  </div>
+  <div class="sketch-box tint-blue">
+    <span class="label">💡 why is the image plane drawn in <i>front</i> of the centre?</span>
+    <p style="margin:2px 0;">Physically the sensor sits <b>behind</b> the lens/centre, so the true image forms <b>inverted</b> (upside-down and left-right flipped). To avoid dragging that sign flip through every formula, we place a <span class="def-term">virtual image plane</span> in front of the centre at the <b>same distance $f$</b>. It carries an <b>upright image of exactly the same size</b>, and the geometry is identical (same similar triangles) — so all the equations come out clean. That convention is why every diagram here shows the plane in front. 🙃➡️🙂</p>
+  </div>
+  <p class="small">Names to know: the $XY$-plane of the camera frame is the <span class="def-term">principal plane</span>; the $Z$-axis is the <span class="def-term">principal (optical) axis</span>; the axis pierces the image plane at the <span class="def-term">principal point</span>. That $\div Z$ is why far things look small — <b>perspective foreshortening</b>.</p>
+
+  <!-- 2 matrix -->
+  <h2 class="section"><span class="num">2</span> writing it as a matrix — the 3×4 projection matrix</h2>
+  <p>The division by $Z$ is non-linear… until we use <b>homogeneous coordinates</b>. Represent the world point as a 4-vector $(X,Y,Z,1)^{T}$ and the image point as a 3-vector; then projection is <i>linear</i>:</p>
+  <div class="eqn">$$ \begin{bmatrix}fX\\fY\\Z\end{bmatrix}=\begin{bmatrix}f&0&0&0\\0&f&0&0\\0&0&1&0\end{bmatrix}\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix} $$</div>
+  <div class="bubble"><span class="say">read it as:</span> the output $(fX,fY,Z)$ is a homogeneous image point — divide by the last entry $Z$ and you recover $(fX/Z,\,fY/Z)$, exactly our projection. The scale factor <b>is</b> the depth $Z$.</div>
+  <p>That $3\times4$ matrix is the <span class="def-term">projection matrix</span> $P$. In canonical form it splits as:</p>
+  <div class="eqn">$$ P=\operatorname{diag}(f,f,1)\,[\,I\mid \mathbf 0\,] $$</div>
+  <p class="small">Pulling $f$ out leaves the bare <mark class="blue">$[\,I\mid\mathbf 0\,]$</mark> — the <span class="def-term">minimal / canonical</span> camera. This is precisely the camera you get when the image plane is <b>normalised to unit distance</b> ($f=1$) from the centre. Everything else ($f$, the principal point, pixels, skew) is just extra structure layered on top of this canonical core.</p>
+  <div class="bubble"><span class="say">dimension check:</span> this is a linear map from the <b>3-D projective space</b> $\mathbb P^3$ (world points $(X,Y,Z,1)^{T}$) down to the <b>2-D projective space</b> $\mathbb P^2$ (image points $(x,y,1)^{T}$) — written $\mathbb P^3\!\to\!\mathbb P^2$. Contrast a <b>homography</b>, which is $\mathbb P^2\!\to\!\mathbb P^2$ (plane→plane, square and invertible). The <i>drop</i> in dimension is why depth is lost.</div>
+  <div class="sketch-box tint-pink">
+    <span class="label">⚠️ 3-D→2-D is NOT invertible</span>
+    <p style="margin:2px 0;">Unlike a homography (a square, invertible $3\times3$ map between two <i>planes</i>), $P$ is $3\times4$ — not square. A 3-D point maps to a unique pixel, but a pixel maps back to an entire <b>ray</b> of 3-D points. You cannot recover depth from one image. 🚫</p>
+  </div>
+
+  <!-- 3 principal point -->
+  <h2 class="section"><span class="num">3</span> shifting the origin — the principal point</h2>
+  <p>Real image coordinates start from a corner, not the principal point. If the principal point sits at $(p_x,p_y)$, every image coordinate is offset: $x=f\tfrac{X}{Z}+p_x$, $y=f\tfrac{Y}{Z}+p_y$. That offset moves into the <b>third column</b>, and the focal/offset part becomes the <span class="def-term">calibration matrix</span> $K$:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">calibration matrix (so far)</div>
+      <div class="eqn" style="margin:6px 0;">$$ K=\begin{bmatrix}f&0&p_x\\0&f&p_y\\0&0&1\end{bmatrix},\qquad \mathbf x=K\,[\,I\mid\mathbf 0\,]\,\mathbf X $$</div>
+    </div>
+  </div>
+  <div class="worked">
+    <span class="tag">check the offset by hand — where does the $+p_x$ come from?</span>
+    <ol>
+      <li>The third column of $P$ changes from $(0,0,1)^{T}$ to $(p_x,p_y,1)^{T}$. Multiply out: $\begin{bmatrix}f&0&p_x&0\\0&f&p_y&0\\0&0&1&0\end{bmatrix}\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}=\begin{bmatrix}fX+p_xZ\\ fY+p_yZ\\ Z\end{bmatrix}$.</li>
+      <li>Dehomogenise (divide by the last entry $Z$): $\ x'=\dfrac{fX+p_xZ}{Z}=f\dfrac{X}{Z}+p_x$, and likewise $\ y'=f\dfrac{Y}{Z}+p_y$. ✔️ — exactly the shifted coordinates we wanted.</li>
+    </ol>
+  </div>
+
+  <!-- 4 extrinsics -->
+  <h2 class="section"><span class="num">4</span> the camera isn't at the origin — extrinsics R, t</h2>
+  <p>Usually the world has its own frame, offset and rotated from the camera's. A world point $\tilde{\mathbf X}$ converts to camera coordinates by a <b>rigid motion</b>: rotate + translate.</p>
+  <div class="eqn">$$ \tilde{\mathbf X}_{\text{cam}}=R\big(\tilde{\mathbf X}-\tilde{\mathbf C}\big) $$</div>
+  <p class="small">$R$ = $3\times3$ <b>rotation</b> (orthonormal) matrix; $\tilde{\mathbf C}$ = the camera centre's position in world coordinates. (Tilde = ordinary non-homogeneous coordinates.)</p>
+  <div class="worked">
+    <span class="tag">assemble $P$ step-by-step — the $4\times4$ world→camera block</span>
+    <ol>
+      <li>Write the rigid motion in homogeneous form as one $4\times4$ matrix: $\begin{bmatrix}\tilde{\mathbf X}_{\text{cam}}\\ 1\end{bmatrix}=\begin{bmatrix}R & -R\tilde{\mathbf C}\\ \mathbf 0^{T} & 1\end{bmatrix}\begin{bmatrix}\tilde{\mathbf X}\\ 1\end{bmatrix}$.</li>
+      <li>Cascade it with the canonical camera $K[\,I\mid\mathbf 0\,]$: $\quad \mathbf x = K\,[\,I\mid\mathbf 0\,]\begin{bmatrix}R & -R\tilde{\mathbf C}\\ \mathbf 0^{T} & 1\end{bmatrix}\mathbf X$.</li>
+      <li>Count the shapes: $\underbrace{K}_{3\times3}\cdot\underbrace{[\,I\mid\mathbf 0\,]}_{3\times4}\cdot\underbrace{\text{block}}_{4\times4}$ collapses into a single $3\times4$ matrix — and that product <b>is</b> $P$. (Multiplying the first two already gives $K[\,R\mid -R\tilde{\mathbf C}\,]$.)</li>
+    </ol>
+  </div>
+  <p>Fold this into the projection — the full projective camera:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the full camera matrix</div>
+      <div class="eqn" style="margin:6px 0;">$$ P=K\,[\,R\mid \mathbf t\,]=K\,R\,[\,I\mid -\tilde{\mathbf C}\,],\qquad \mathbf t=-R\tilde{\mathbf C} $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> "un-rotate &amp; un-shift the world into the camera's frame ($[R\mid\mathbf t]$), then apply the lens ($K$)." Handy consequence: the camera centre is recoverable straight from $P$, since the $-\tilde{\mathbf C}$ sits right there.</div>
+
+  <!-- 5 pixels + skew -->
+  <h2 class="section"><span class="num">5</span> real sensors — pixels &amp; skew</h2>
+  <p>A digital sensor (CCD/CMOS) has a finite pixel density. If there are $m_x$ pixels per unit length horizontally and $m_y$ vertically, the focal length in <b>pixels</b> becomes $\alpha_x=f\,m_x$ and $\alpha_y=f\,m_y$ (they differ if pixels aren't square). Add a <span class="def-term">skew</span> $s$ for sensors whose axes aren't exactly perpendicular:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the full calibration matrix</div>
+      <div class="eqn" style="margin:6px 0;">$$ K=\begin{bmatrix}\alpha_x & s & p_x\\ 0 & \alpha_y & p_y\\ 0 & 0 & 1\end{bmatrix} $$</div>
+    </div>
+  </div>
+  <p class="small">$s\approx \alpha_x\tan\theta$ for a tiny deviation $\theta$ from 90°; on modern cameras $s\approx0$. $K$ is <b>upper-triangular</b> with 5 free numbers.</p>
+
+  <!-- 6 dof -->
+  <h2 class="section"><span class="num">6</span> counting the parameters — 11 DOF</h2>
+  <p>The $3\times4$ $P$ has 12 entries, but it's defined only up to scale ⇒ <mark>11 degrees of freedom</mark>, split into two groups:</p>
+  <table class="hand">
+    <thead><tr><th>group</th><th>parameters</th><th>count</th></tr></thead>
+    <tbody>
+      <tr><td><b>Intrinsic</b> (inside $K$)</td><td>$\alpha_x,\ \alpha_y,\ s,\ p_x,\ p_y$</td><td>5</td></tr>
+      <tr><td><b>Extrinsic</b> (in $[R\mid\mathbf t]$)</td><td>3 rotation + 3 translation</td><td>6</td></tr>
+    </tbody>
+  </table>
+  <p class="small"><b>Intrinsics</b> describe the camera itself (lens + sensor); <b>extrinsics</b> describe its pose in the world. Together: $P=K[R\mid\mathbf t]$, $\ \mathbf x=P\mathbf X$.</p>
+
+  <div class="banner">
+    <h3>a camera = one 3×4 matrix $P=K[R\,|\,\mathbf t]$: lens &amp; sensor ($K$) times pose ($R,\mathbf t$).</h3>
+    <p>perspective divides by depth; projection is linear in homogeneous coords; 11 DOF = 5 intrinsic + 6 extrinsic; not invertible.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>Why does a distant object appear smaller in a photo?
+        <div class="ans">perspective projection divides by depth: $x=fX/Z$, so larger $Z$ shrinks the image coordinate</div></li>
+      <li>Why can't you recover a 3-D point from its single image point?
+        <div class="ans">$P$ is $3\times4$ (not invertible); a pixel corresponds to a whole ray of 3-D points — depth is lost</div></li>
+      <li>What do the 5 intrinsic parameters in $K$ represent?
+        <div class="ans">focal lengths in pixels $\alpha_x,\alpha_y$, skew $s$, and principal point $p_x,p_y$</div></li>
+      <li>Write the full camera matrix in terms of $K$, $R$ and the camera centre $\tilde{\mathbf C}$.
+        <div class="ans">$P=K R\,[\,I\mid-\tilde{\mathbf C}\,]=K[\,R\mid\mathbf t\,]$ with $\mathbf t=-R\tilde{\mathbf C}$</div></li>
+      <li>Why is the image plane drawn in <i>front</i> of the camera centre?
+        <div class="ans">it's a virtual plane at the same distance $f$; the real image behind the lens is inverted, so the front plane gives an upright, same-size image with identical geometry</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 11 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l12">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:40px;" width="26" height="26" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.85"/></svg>
+  <svg class="doodle" style="top:60px; left:64px;" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.8"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 12</div>
+    <h2>Camera Geometry — Part II</h2>
+    <div class="lsub">intrinsic parameters &middot; the calibration matrix K &middot; pixels, principal point &amp; skew</div>
+  </div>
+
+  <!-- BIG PICTURE -->
+  <div class="sticky blue">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Last lecture we said a camera is a machine that turns a <b>3-D world point $\mathbf X$</b> into a <b>2-D image point $\mathbf x$</b> by a single matrix multiply, $\mathbf x = P\mathbf X$. Today we <mark class="blue">open up that matrix $P$</mark> and see what is inside.</p>
+    <p class="small">$P$ splits cleanly into two halves: <b>where the camera sits and points</b> (the <i>extrinsic</i> part, $R$ and the centre) and <b>how the camera turns metres on the focal plane into pixels</b> (the <i>intrinsic</i> part, the calibration matrix $K$). We will also learn how to <i>recover</i> $P$ from a handful of point matches, and read the camera centre and vanishing points straight off it. 📷</p>
+  </div>
+
+  <!-- 1. recap -->
+  <h2 class="section"><span class="num">1</span> recap — the projective camera $P$</h2>
+  <p>A <span class="def-term">projective camera</span> is a $3\times4$ matrix $P$ that maps a world point to an image point in <b>homogeneous (projective) coordinates</b>:</p>
+  <div class="eqn">$$ \mathbf x = P\,\mathbf X,\qquad \mathbf x=\begin{bmatrix}x\\y\\w\end{bmatrix}\ (3\text{-vector}),\quad \mathbf X=\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}\ (4\text{-vector}) $$</div>
+  <div class="bubble"><span class="say">read it as:</span> “stick a $1$ onto the 3-D point to make it a 4-vector, hit it with $P$, and out drops a 3-vector image point.” The image point is <b>homogeneous</b>: divide by its last entry $w$ to read off the real pixel $\big(x/w,\ y/w\big)$.</div>
+  <p>The professor reminds us that $P$ is not one solid block — it factors into recognisable pieces:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the camera, factored</div>
+      <div class="eqn" style="margin:6px 0;">$$ P = K\,[\,R \mid \mathbf t\,] = K\,R\,[\,I \mid -\tilde{\mathbf C}\,] $$</div>
+    </div>
+  </div>
+  <div class="sketch-box tint-mint">
+    <span class="label">🧩 what each factor does</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>$R$</b> — a $3\times3$ <span class="def-term">rotation matrix</span>. It <i>rotates the world axes until they line up with the camera's own axes</i> (a change of orientation). Extrinsic.</li>
+      <li><b>$\mathbf t$ / $\tilde{\mathbf C}$</b> — the <span class="def-term">translation</span> that moves the world origin onto the camera centre $\tilde{\mathbf C}$. Extrinsic.</li>
+      <li><b>$K$</b> — the <span class="def-term">calibration matrix</span>: it converts the tidy metric image on the focal plane into <i>actual pixel indices</i>. Intrinsic. <mark>This is today's star.</mark></li>
+    </ul>
+  </div>
+
+  <div class="diagram">
+    <h4>the two coordinate frames: world vs camera</h4>
+    <svg viewBox="0 0 460 210">
+      <g font-family="Kalam" font-size="12" fill="var(--ink)">
+        <!-- world frame -->
+        <circle cx="70" cy="150" r="4" fill="var(--ink)"/>
+        <text x="44" y="170" font-size="11" fill="var(--ink-soft)">world origin</text>
+        <line x1="70" y1="150" x2="150" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="154" y="154">Xw</text>
+        <line x1="70" y1="150" x2="70" y2="70" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="58" y="64">Yw</text>
+        <line x1="70" y1="150" x2="118" y2="188" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arrow)"/>
+        <text x="120" y="198" font-size="11">Zw</text>
+        <!-- camera frame -->
+        <circle cx="330" cy="95" r="5" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.6"/>
+        <text x="322" y="80" font-size="11">camera centre C̃</text>
+        <g stroke="var(--coral)" stroke-width="1.7">
+          <line x1="330" y1="95" x2="405" y2="112" marker-end="url(#arrowc)"/>
+          <line x1="330" y1="95" x2="312" y2="28" marker-end="url(#arrowc)"/>
+          <line x1="330" y1="95" x2="270" y2="128" marker-end="url(#arrowc)"/>
+        </g>
+        <text x="408" y="116" fill="var(--coral)">xc</text>
+        <text x="300" y="24" fill="var(--coral)">yc</text>
+        <text x="248" y="134" fill="var(--coral)" font-size="11">zc (optical axis)</text>
+        <!-- t arrow -->
+        <line x1="70" y1="150" x2="330" y2="95" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+        <text x="176" y="118" fill="var(--ink-soft)" font-size="12">translation t (+ rotation R)</text>
+      </g>
+    </svg>
+    <div class="cap">Extrinsics ($R,\mathbf t$) carry you from the world frame to the camera-centred frame; intrinsics ($K$) then take over inside the camera.</div>
+  </div>
+
+  <!-- 2. calibration matrix K -->
+  <h2 class="section"><span class="num">2</span> the calibration matrix $K$ — intrinsic parameters</h2>
+  <p><span class="def-term">Intrinsic (internal) parameters</span> are the ones baked into the camera hardware itself — the lens focal length, the sensor's pixel size, where the optical axis lands on the chip. They do <b>not</b> change when you move the camera around. All of them live in one upper-triangular $3\times3$ matrix:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the calibration matrix</div>
+      <div class="eqn" style="margin:6px 0;">$$ K=\begin{bmatrix} f_x & s & p_x\\[2pt] 0 & f_y & p_y\\[2pt] 0 & 0 & 1 \end{bmatrix} $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> “scale the two axes by $f_x,f_y$, shear them by the skew $s$, then shift the origin to the principal point $(p_x,p_y)$.” Three simple 2-D operations — scaling, shearing, translating — stacked into one matrix.</div>
+
+  <h3 class="sub">step 1 — from an ideal image to pixels</h3>
+  <p>Imagine the perfect, textbook image formed on the focal plane, measured in <b>millimetres</b> with its origin on the optical axis. A camera-frame point $(X,Y,Z)$ lands there at the ideal coordinates $\big(f\tfrac{X}{Z},\ f\tfrac{Y}{Z}\big)$, where $f$ is the <span class="def-term">focal length</span> in mm. But a sensor doesn't count millimetres — it counts <b>pixels</b>. Two fixes are needed.</p>
+
+  <div class="sketch-box tint-blue">
+    <span class="label">🔧 the two fixes that build $K$</span>
+    <ol class="notes" style="margin:4px 0 0;">
+      <li><b>Scale mm → pixels.</b> Let $m_x$ = pixels per mm along the horizontal, $m_y$ = pixels per mm along the vertical. Then the focal length expressed <i>in pixels</i> along each axis is
+        <div class="eqn" style="margin:6px 0;">$$ f_x = f\,m_x,\qquad f_y = f\,m_y $$</div>
+        These $f_x,f_y$ are the <span class="def-term">resolution factors</span> — the same $f$ measured in two different pixel rulers. <span class="small">(Lecture wording: the professor calls $m_x,m_y$ the “number of pixels along the horizontal / vertical direction”. Read that as the pixel <i>density</i> — pixels per unit length — which is the standard meaning used here, so $f\,m$ correctly comes out in pixels.)</span></li>
+      <li><b>Shift the origin.</b> Pixel indices are counted from a <i>corner</i> of the sensor, not from the optical axis. So we add the <span class="def-term">principal point</span> $(p_x,p_y)$ — the pixel where the optical axis actually pierces the image (usually near the centre of the frame).</li>
+    </ol>
+  </div>
+
+  <p>Putting both together, the pixel coordinates $(u,v)$ of a camera-frame point are:</p>
+  <div class="eqn">$$ u = f_x\,\frac{X}{Z} + s\,\frac{Y}{Z} + p_x,\qquad v = f_y\,\frac{Y}{Z} + p_y $$</div>
+  <div class="bubble"><span class="say">read it as:</span> “take the ideal projection, magnify it by the pixels-per-unit resolution, nudge in a pinch of skew, and slide the origin over to the principal point.” That is <i>exactly</i> multiplying by $K$.</div>
+
+  <div class="diagram">
+    <h4>ideal metric image  →  pixel array (what $K$ does)</h4>
+    <svg viewBox="0 0 460 220">
+      <g font-family="Kalam" font-size="12" fill="var(--ink)">
+        <!-- pixel grid -->
+        <g stroke="#cbd5c8" stroke-width="1">
+          <rect x="60" y="30" width="200" height="150" fill="#fbfbf6" stroke="var(--ink)" stroke-width="1.6"/>
+          <line x1="110" y1="30" x2="110" y2="180"/><line x1="160" y1="30" x2="160" y2="180"/><line x1="210" y1="30" x2="210" y2="180"/>
+          <line x1="60" y1="80" x2="260" y2="80"/><line x1="60" y1="130" x2="260" y2="130"/>
+        </g>
+        <!-- pixel origin at top-left corner -->
+        <circle cx="60" cy="30" r="4" fill="var(--ink)"/>
+        <text x="22" y="26" font-size="11" fill="var(--ink-soft)">pixel (0,0)</text>
+        <line x1="60" y1="30" x2="120" y2="30" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="124" y="34" font-size="11">u</text>
+        <line x1="60" y1="30" x2="60" y2="90" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="46" y="98" font-size="11">v</text>
+        <!-- principal point -->
+        <circle cx="160" cy="105" r="4.5" fill="var(--coral)" stroke="var(--ink)" stroke-width="1.4"/>
+        <text x="168" y="102" fill="var(--coral)" font-size="11">principal pt (pₓ,p_y)</text>
+        <!-- metric axes at principal point -->
+        <line x1="160" y1="105" x2="235" y2="105" stroke="var(--coral)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowc)"/>
+        <line x1="160" y1="105" x2="160" y2="48" stroke="var(--coral)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowc)"/>
+        <text x="238" y="109" fill="var(--coral)" font-size="11">x (mm)</text>
+        <text x="146" y="46" fill="var(--coral)" font-size="11">y (mm)</text>
+        <!-- skew illustration -->
+        <line x1="330" y1="180" x2="330" y2="60" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="330" y1="180" x2="430" y2="180" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="330" y1="180" x2="360" y2="60" stroke="var(--blue)" stroke-width="2.2" marker-end="url(#arrow)"/>
+        <path d="M330,120 A 60 60 0 0 0 342 118" fill="none" stroke="var(--ink-soft)" stroke-width="1.2"/>
+        <text x="356" y="54" fill="#2471a3" font-size="11">skewed axis</text>
+        <text x="344" y="112" font-size="10" fill="var(--ink-soft)">skew s</text>
+        <text x="330" y="200" font-size="11" fill="var(--ink-soft)">s ≠ 0 ⇒ axes not perpendicular</text>
+      </g>
+    </svg>
+    <div class="cap">Left: pixel indices start at a corner; the metric image sits centred on the principal point. Right: skew tilts one axis. $K$ encodes all of this.</div>
+  </div>
+
+  <h3 class="sub">the five knobs inside $K$</h3>
+  <table class="hand">
+    <thead><tr><th>entry</th><th>name</th><th>what it means</th></tr></thead>
+    <tbody>
+      <tr><td>$f_x=f\,m_x$</td><td>focal length in pixels (x)</td><td>how many pixels one unit of horizontal focal length spans</td></tr>
+      <tr><td>$f_y=f\,m_y$</td><td>focal length in pixels (y)</td><td>same, vertically; differs from $f_x$ if pixels aren't square</td></tr>
+      <tr><td>$p_x$</td><td>principal point (x)</td><td>column index where the optical axis hits the sensor</td></tr>
+      <tr><td>$p_y$</td><td>principal point (y)</td><td>row index where the optical axis hits the sensor</td></tr>
+      <tr><td>$s$</td><td>skew</td><td>tilt between the pixel axes; $s=0$ for an ideal rectangular grid</td></tr>
+    </tbody>
+  </table>
+  <p>That is <mark class="yellow">5 intrinsic parameters</mark> — remember this count, it comes back in Section&nbsp;5.</p>
+
+  <h3 class="sub">aspect ratio, the determinant &amp; why $K$ is upper-triangular</h3>
+  <div class="two-col">
+    <div class="sketch-box tint-yellow">
+      <span class="label">📏 aspect ratio</span>
+      <p style="margin:2px 0;">The ratio $\dfrac{f_y}{f_x}=\dfrac{m_y}{m_x}$ is the <span class="def-term">aspect ratio</span> of a pixel. Square pixels ⇒ $m_x=m_y$ ⇒ ratio $=1$ ⇒ $f_x=f_y$.</p>
+    </div>
+    <div class="sketch-box tint-pink">
+      <span class="label">🧮 determinant of $K$</span>
+      <p style="margin:2px 0;">Because $K$ is triangular, its determinant is just the product of the diagonal:</p>
+      <div class="eqn" style="margin:4px 0;">$$ \det K = f_x\,f_y $$</div>
+      <p class="small" style="margin:2px 0;">the professor's “product of the two resolution factors”.</p>
+    </div>
+  </div>
+  <div class="sketch-box">
+    <span class="label">▲ why upper-triangular?</span>
+    <p style="margin:2px 0;">Going from the ideal image to pixels only ever <b>scales the axes, shears them, and offsets the origin</b> — none of those operations feed the last (homogeneous) coordinate back into the first two rows. Every such 2-D affine map has zeros below the diagonal, so their product $K$ is <mark class="mint">upper-triangular</mark>. (Formally, $K$ falls out of the <i>RQ decomposition</i> of the left $3\times3$ block of $P$, which is defined to give an upper-triangular $K$ and an orthonormal $R$.)</p>
+  </div>
+
+  <h3 class="sub">projection for a camera at the origin</h3>
+  <p>If the camera sits at the world origin looking straight down its axis (no rotation, no translation, so $R=I$ and $\tilde{\mathbf C}=\mathbf 0$), the whole camera collapses to just its intrinsics:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">canonical projection (camera at origin)</div>
+      <div class="eqn" style="margin:6px 0;">$$ \mathbf x = K\,[\,I \mid \mathbf 0\,]\,\mathbf X $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> “$[\,I\mid\mathbf 0\,]$ just chops the homogeneous $1$ off $\mathbf X$ to give $(X,Y,Z)$; then $K$ turns that into a pixel.” It's the simplest possible camera — pure intrinsics.</div>
+
+  <div class="worked">
+    <span class="tag">worked example — project one point through $K$ <span class="illus">(illustrative numbers)</span></span>
+    <p style="margin:2px 0;">Let $f_x=f_y=800$ px, principal point $(p_x,p_y)=(320,240)$, skew $s=0$, camera at the origin. A point in front of the camera has camera-frame coordinates $(X,Y,Z)=(0.2,\,0.1,\,2)$.</p>
+    <ol>
+      <li>$K[I\mid\mathbf 0]\mathbf X = K\,(0.2,\ 0.1,\ 2)^{\top} = \big(800(0.2)+320(2),\ \ 800(0.1)+240(2),\ \ 2\big) = (800,\ 560,\ 2)$.</li>
+      <li>Dehomogenise (divide by $w=2$): pixel $=(800/2,\ 560/2)=(400,\ 280)$.</li>
+      <li>Check with the shortcut: $u=f_x\tfrac{X}{Z}+p_x=800(0.1)+320=400$; $\ v=f_y\tfrac{Y}{Z}+p_y=800(0.05)+240=280$. ✔️</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">With a non-zero skew $s$, step&nbsp;1's first entry would gain a term $s\cdot Y = s(0.1)$ — a small horizontal shear.</p>
+  </div>
+
+  <!-- 3. K inverse -->
+  <h2 class="section"><span class="num">3</span> $K^{-1}$ and normalized (canonical) coordinates</h2>
+  <p>Since $K$ is upper-triangular, so is its inverse $K^{-1}$. Multiplying a pixel by $K^{-1}$ <b>undoes</b> the camera's internal calibration:</p>
+  <div class="eqn">$$ \hat{\mathbf x} = K^{-1}\mathbf x $$</div>
+  <div class="sketch-box tint-mint">
+    <span class="label">🎯 what $K^{-1}\mathbf x$ gives you</span>
+    <p style="margin:2px 0;">It returns the point's <span class="def-term">normalized (canonical) image coordinates</span>: the ideal image you'd get from a camera whose <b>focal plane sits at unit distance</b> ($f=1$) and whose <b>axes are parallel to the camera-centred coordinate axes</b>. In other words, you strip away the pixel scaling, the principal-point offset and the skew, leaving pure direction information.</p>
+  </div>
+  <div class="bubble"><span class="say">intuition:</span> $K$ is the “make it look like <i>this particular</i> sensor” step; $K^{-1}$ is the “forget which sensor took it” step. Normalized coordinates let different cameras speak the same geometric language.</div>
+
+  <!-- 4. decomposition of P -->
+  <h2 class="section"><span class="num">4</span> slicing $P$ into blocks: $M$ and $\mathbf p_4$</h2>
+  <p>The professor introduces the working notation. Write the $3\times4$ matrix $P$ as its left $3\times3$ block $M$ plus its last column $\mathbf p_4$:</p>
+  <div class="eqn">$$ P = [\,M \mid \mathbf p_4\,],\qquad M = K R \quad(\text{a }3\times3\text{ block}),\qquad \mathbf p_4 = \text{4th column}\ (3\times1) $$</div>
+  <p>Factor $M$ back out and you reach the <span class="def-term">canonical form</span> of the camera:</p>
+  <div class="eqn">$$ P = [\,M \mid \mathbf p_4\,] = M\,[\,I \mid M^{-1}\mathbf p_4\,] = M\,[\,I \mid -\tilde{\mathbf C}\,] $$</div>
+  <div class="bubble"><span class="say">read it as:</span> “pull $M$ out front, and the leftover last column becomes $-\tilde{\mathbf C}$.” Matching the two forms gives a free formula for the camera centre: $\tilde{\mathbf C} = -M^{-1}\mathbf p_4$.</div>
+  <p class="small">Two useful decompositions of the same $P$: $\ [\,M\mid\mathbf p_4\,]$ (block + column) and $\ M[\,I\mid-\tilde{\mathbf C}\,]$ (canonical). $M$ itself further splits as $M=KR$ — intrinsics times rotation.</p>
+
+  <!-- 5. properties -->
+  <h2 class="section"><span class="num">5</span> properties of the projective camera</h2>
+  <div class="sketch-box tint-blue">
+    <span class="label">📋 the facts to memorise</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>Size &amp; rank.</b> $P$ is $3\times4$ and has <b>rank 3</b> (full row rank).</li>
+      <li><b>Degrees of freedom = 11.</b> $P$ has $12$ entries but is defined only <i>up to scale</i> (multiply the whole matrix by any non-zero constant and it's the same camera), so one degree is spent — leaving $11$ independent parameters.</li>
+      <li><b>$11 = 6 + 5$.</b> Six <span class="def-term">extrinsic</span> parameters (3 for the rotation $R$ + 3 for the translation of the origin) and five <span class="def-term">intrinsic</span> parameters (the $f_x,f_y,s,p_x,p_y$ inside $K$).</li>
+    </ul>
+  </div>
+  <div class="eqn">$$ \underbrace{11}_{\text{DOF of }P} \;=\; \underbrace{6}_{\text{extrinsic }(R,\ \mathbf t)} \;+\; \underbrace{5}_{\text{intrinsic }(K)} $$</div>
+
+  <!-- 6. two equations per point -->
+  <h2 class="section"><span class="num">6</span> from one match to two equations (the cross-product trick)</h2>
+  <p>Suppose experimentally we know a 3-D scene point $\mathbf X_i$ <b>and</b> its observed image point $\mathbf x_i=(x_i,\,y_i,\,w_i)^{\top}$. We'd like to use this pair to pin down $P$. The catch: because we're in projective space, $\mathbf x_i$ and $P\mathbf X_i$ are only equal <b>up to an unknown scale factor</b> $\lambda$, so we cannot just set their entries equal:</p>
+  <div class="eqn">$$ \mathbf x_i \sim P\mathbf X_i \qquad(\text{equal in direction, not in length}) $$</div>
+  <div class="sketch-box tint-yellow">
+    <span class="label">✖️ kill the scale with a cross product</span>
+    <p style="margin:2px 0;">Two vectors that point the <b>same direction</b> (differ only by a scale) have a <b>zero cross product</b>. So the scale factor simply vanishes if we write:</p>
+    <div class="eqn" style="margin:6px 0;">$$ \mathbf x_i \times (P\mathbf X_i) = \mathbf 0 $$</div>
+  </div>
+  <p>Write $P$ as three <b>row</b> vectors $\mathbf r_1^{\top},\mathbf r_2^{\top},\mathbf r_3^{\top}$ (each $1\times4$). Then $P\mathbf X_i$ is a column of three scalars, and the cross product with $\mathbf x_i$ expands into three equations:</p>
+  <div class="eqn">$$ P\mathbf X_i=\begin{bmatrix}\mathbf r_1^{\top}\mathbf X_i\\ \mathbf r_2^{\top}\mathbf X_i\\ \mathbf r_3^{\top}\mathbf X_i\end{bmatrix},\qquad
+  \mathbf x_i \times P\mathbf X_i=\begin{bmatrix} y_i\,\mathbf r_3^{\top}\mathbf X_i - w_i\,\mathbf r_2^{\top}\mathbf X_i\\[2pt] w_i\,\mathbf r_1^{\top}\mathbf X_i - x_i\,\mathbf r_3^{\top}\mathbf X_i\\[2pt] x_i\,\mathbf r_2^{\top}\mathbf X_i - y_i\,\mathbf r_1^{\top}\mathbf X_i \end{bmatrix}=\mathbf 0 $$</div>
+  <p>Regrouping so the unknown rows $\mathbf r_1,\mathbf r_2,\mathbf r_3$ stand on the right gives the tidy matrix form (note each block is a $1\times4$ row, $\mathbf 0^{\top}$ is a $1\times4$ zero):</p>
+  <div class="eqn">$$ \begin{bmatrix} \mathbf 0^{\top} & -w_i\mathbf X_i^{\top} & \ \ y_i\mathbf X_i^{\top}\\[2pt] w_i\mathbf X_i^{\top} & \mathbf 0^{\top} & -x_i\mathbf X_i^{\top}\\[2pt] -y_i\mathbf X_i^{\top} & \ \ x_i\mathbf X_i^{\top} & \mathbf 0^{\top} \end{bmatrix}
+  \begin{bmatrix}\mathbf r_1\\ \mathbf r_2\\ \mathbf r_3\end{bmatrix}=\mathbf 0 $$</div>
+  <div class="sketch-box tint-pink">
+    <span class="label">⚠️ only two of the three are independent</span>
+    <p style="margin:2px 0;">Multiply row 1 by $x_i$, row 2 by $y_i$, add them — you recover row 3 (times $w_i$). So the third equation is <b>redundant</b>: each point correspondence supplies exactly <mark>2 independent equations</mark>.</p>
+  </div>
+  <div class="bubble"><span class="say">so, the headcount:</span> $P$ has 11 unknowns; each match gives 2 equations. You need at least $\lceil 11/2\rceil = 6$ point correspondences (giving $12$ equations) to solve for the camera. 🎯</div>
+
+  <!-- 7. estimating P -->
+  <h2 class="section"><span class="num">7</span> estimating $P$ — the Direct Linear Transform (DLT)</h2>
+  <p>Collect $n$ correspondences. Each contributes $2$ rows, so stacking them gives a tall matrix $A$ of size $2n\times12$ acting on the $12$-vector $\mathbf p$ (all the entries of $P$, read out row by row):</p>
+  <div class="eqn">$$ A\,\mathbf p = \mathbf 0,\qquad A\in\mathbb R^{\,2n\times12},\quad \mathbf p=\big(\mathbf r_1;\,\mathbf r_2;\,\mathbf r_3\big)\in\mathbb R^{12} $$</div>
+  <p>With $n\ge6$ we have more equations than unknowns (an <b>over-determined</b> homogeneous system), so we solve it in the <b>least-squares</b> sense. Since any scaled $\mathbf p$ is also a solution, we pin the scale with the constraint $\lVert\mathbf p\rVert=1$:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">DLT objective</div>
+      <div class="eqn" style="margin:6px 0;">$$ \min_{\mathbf p}\ \lVert A\mathbf p\rVert \quad\text{subject to}\quad \lVert\mathbf p\rVert = 1 $$</div>
+    </div>
+  </div>
+  <div class="sketch-box tint-mint">
+    <span class="label">🛠️ how to actually solve it</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>Eigenvector route:</b> the minimiser is the <b>eigenvector of $A^{\top}A$ with the smallest eigenvalue</b> (equivalently, the last right-singular vector of $A$). Reshape that 12-vector back into $P$.</li>
+      <li><b>Non-homogeneous route:</b> fix one element of $\mathbf p$ to a value and solve the remaining ordinary least-squares system.</li>
+      <li>This is the very same <span class="def-term">Direct Linear Transform</span> machinery used earlier to estimate a homography — identical recipe, bigger matrix.</li>
+    </ul>
+  </div>
+
+  <!-- 8. reading geometry off P -->
+  <h2 class="section"><span class="num">8</span> reading geometry straight off $P$</h2>
+
+  <h3 class="sub">the camera centre is $P$'s null-space</h3>
+  <p>The camera centre $\tilde{\mathbf C}$ is a <b>singular point</b>: you cannot photograph the very point light rays pass <i>through</i> — there is no ray joining a point to itself. In projective terms the homogeneous centre $\mathbf C=(\tilde{\mathbf C};1)$ maps to the zero vector:</p>
+  <div class="eqn">$$ P\,\mathbf C = \mathbf 0 $$</div>
+  <p>Split $P=[\,M\mid\mathbf p_4\,]$ and multiply out: $\ M\tilde{\mathbf C}+\mathbf p_4=\mathbf 0$, which rearranges to the formula we already glimpsed:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">camera centre (finite camera)</div>
+      <div class="eqn" style="margin:6px 0;">$$ \tilde{\mathbf C} = -\,M^{-1}\,\mathbf p_4 $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> “grab the left $3\times3$ block $M$, invert it, and multiply the last column — negated — to get where the camera is.” Valid whenever $M$ is invertible.</div>
+  <div class="sketch-box tint-blue">
+    <span class="label">🔎 finite vs. camera-at-infinity</span>
+    <p style="margin:2px 0;">For a <b>finite</b> camera $M$ is <b>non-singular</b> and the formula above works. For a camera <b>at infinity</b> the centre is itself a <b>point at infinity</b>, so its homogeneous scale factor is $0$ and $M$ turns out <b>singular</b> ($M^{-1}$ does not exist, so $-M^{-1}\mathbf p_4$ is unavailable). The professor writes the centre directly in homogeneous form as the <b>null-direction of $M$</b>:</p>
+    <div class="eqn" style="margin:6px 0;">$$ \mathbf C=\begin{bmatrix}\mathbf d\\[2pt] 0\end{bmatrix},\qquad M\,\mathbf d=\mathbf 0 $$</div>
+    <p style="margin:2px 0;">i.e. solve for the direction $\mathbf d$ that $M$ collapses to zero, and stack a $0$ underneath it (the last coordinate $0$ marks a point on the plane at infinity). This singular case is elaborated in the next lecture.</p>
+  </div>
+
+  <div class="worked">
+    <span class="tag">worked example — camera centre from $M,\mathbf p_4$ <span class="illus">(illustrative)</span></span>
+    <p style="margin:2px 0;">Say a solved camera has left block $M=I$ (identity, illustrative) and last column $\mathbf p_4=(2,-3,5)^{\top}$.</p>
+    <ol>
+      <li>$M^{-1}=I$, so $M^{-1}\mathbf p_4=(2,-3,5)^{\top}$.</li>
+      <li>$\tilde{\mathbf C}=-M^{-1}\mathbf p_4=(-2,\ 3,\ -5)^{\top}$ — the camera sits at that world location.</li>
+    </ol>
+  </div>
+
+  <h3 class="sub">the columns of $P$ are vanishing points</h3>
+  <p>Write $P$ as four columns $[\,\mathbf p_1\ \mathbf p_2\ \mathbf p_3\ \mathbf p_4\,]$. A <span class="def-term">vanishing point</span> is the image of a <b>point at infinity</b> along some direction $\mathbf d$ — all world lines parallel to $\mathbf d$ appear to converge there. A point at infinity is written $(\mathbf d;\,0)$ (last coordinate $0$). Feed the axis directions in:</p>
+  <div class="eqn">$$ P\begin{bmatrix}1\\0\\0\\0\end{bmatrix}=\mathbf p_1,\quad P\begin{bmatrix}0\\1\\0\\0\end{bmatrix}=\mathbf p_2,\quad P\begin{bmatrix}0\\0\\1\\0\end{bmatrix}=\mathbf p_3,\quad P\begin{bmatrix}0\\0\\0\\1\end{bmatrix}=\mathbf p_4 $$</div>
+  <div class="sketch-box tint-yellow">
+    <span class="label">🧭 the four columns, decoded</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>$\mathbf p_1$ = vanishing point of the <b>world X-axis</b></li>
+      <li>$\mathbf p_2$ = vanishing point of the <b>world Y-axis</b></li>
+      <li>$\mathbf p_3$ = vanishing point of the <b>world Z-axis</b></li>
+      <li>$\mathbf p_4$ = image of the <b>world origin</b> $(0,0,0)$ — since $(0,0,0,1)^{\top}$ picks out the last column</li>
+    </ul>
+  </div>
+
+  <div class="diagram">
+    <h4>a vanishing point: parallel rails meet at the image of infinity</h4>
+    <svg viewBox="0 0 440 190">
+      <g font-family="Kalam" font-size="12" fill="var(--ink)">
+        <rect x="30" y="24" width="380" height="140" fill="#fbfbf6" stroke="var(--ink)" stroke-width="1.6"/>
+        <!-- horizon -->
+        <line x1="30" y1="70" x2="410" y2="70" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="330" y="64" font-size="11" fill="var(--ink-soft)">horizon</text>
+        <!-- converging rails -->
+        <line x1="70" y1="164" x2="248" y2="72" stroke="var(--coral)" stroke-width="2"/>
+        <line x1="380" y1="164" x2="252" y2="72" stroke="var(--coral)" stroke-width="2"/>
+        <line x1="160" y1="164" x2="249" y2="74" stroke="#2471a3" stroke-width="1.6"/>
+        <line x1="300" y1="164" x2="251" y2="74" stroke="#2471a3" stroke-width="1.6"/>
+        <!-- vanishing point -->
+        <circle cx="250" cy="72" r="5" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.6"/>
+        <text x="258" y="66" font-size="11">vanishing point = image of the point at infinity</text>
+        <text x="120" y="182" font-size="11" fill="var(--ink-soft)">parallel world lines (same direction d)</text>
+      </g>
+    </svg>
+    <div class="cap">All lines sharing a direction $\mathbf d$ project to lines meeting at one image point — the vanishing point $P\,(\mathbf d;0)$. The three axis directions give the columns $\mathbf p_1,\mathbf p_2,\mathbf p_3$.</div>
+  </div>
+
+  <!-- takeaway -->
+  <div class="banner">
+    <h3>$P = K[R\mid\mathbf t]$: intrinsics $K$ turn metres into pixels, extrinsics $R,\mathbf t$ place the camera.</h3>
+    <p>$K$ = upper-triangular ($f_x,f_y,s,p_x,p_y$) &middot; 11 DOF = 6 + 5 &middot; 6 matches → DLT recovers $P$ &middot; centre $=-M^{-1}\mathbf p_4$, columns = vanishing points.</p>
+  </div>
+
+  <!-- quiz -->
+  <div class="quiz">
+    <ol>
+      <li>Write the calibration matrix $K$ and name what $f_x$ and $p_x$ mean.
+        <div class="ans">$K=\begin{bmatrix}f_x&s&p_x\\0&f_y&p_y\\0&0&1\end{bmatrix}$; $f_x=f\,m_x$ is the focal length in pixels along x, $p_x$ is the principal-point column (where the optical axis meets the sensor)</div></li>
+      <li>A projective camera $P$ has how many degrees of freedom, and how do they split?
+        <div class="ans">11 total = 6 extrinsic (3 rotation + 3 translation) + 5 intrinsic ($f_x,f_y,s,p_x,p_y$)</div></li>
+      <li>One point correspondence gives how many independent equations, and why not three?
+        <div class="ans">2 — the cross-product $\mathbf x_i\times P\mathbf X_i=\mathbf 0$ yields 3 rows, but one is a linear combination of the other two, so it's redundant; hence you need ≥ 6 matches</div></li>
+      <li>Given $P=[\,M\mid\mathbf p_4\,]$ with $M$ non-singular, where is the camera centre?
+        <div class="ans">$\tilde{\mathbf C}=-M^{-1}\mathbf p_4$, obtained from $P\mathbf C=\mathbf 0$</div></li>
+    </ol>
+  </div>
+
+  <div class="signoff">— end of Lecture 12 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l13">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--pink)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 13</div>
+    <h2>Camera Geometry — Part III</h2>
+    <div class="lsub">reading a camera out of its matrix P — centre, vanishing points, principal point, back-projection, depth</div>
+  </div>
+
+  <div class="sticky pink">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>The $3\times4$ matrix $P$ isn't just a projector — it's a <b>treasure chest</b>. Slice it the right way and it hands you the camera's <mark>centre, its viewing directions, its principal point, and the depth of any point</mark> — all by simple linear algebra.</p>
+    <p class="small">This lecture is a toolbox of "given $P$, extract ___" recipes. Learn which slice of $P$ answers which question. 🔑</p>
+  </div>
+
+  <!-- 1 slices -->
+  <h2 class="section"><span class="num">1</span> three ways to slice $P$</h2>
+  <div class="eqn">$$ P=[\,M\mid \mathbf p_4\,]=[\,\mathbf p_1\ \mathbf p_2\ \mathbf p_3\ \mathbf p_4\,]=\begin{bmatrix}\mathbf r_1^{T}\\ \mathbf r_2^{T}\\ \mathbf r_3^{T}\end{bmatrix} $$</div>
+  <p class="small">$M$ = the left $3\times3$ block, $\mathbf p_4$ = the 4th column; $\mathbf p_i$ = columns; $\mathbf r_i^{T}$ = rows. Each slice reveals something different. 👇</p>
+
+  <!-- 2 centre -->
+  <h2 class="section"><span class="num">2</span> the camera centre = the null-space of $P$</h2>
+  <p>The camera centre $C$ is the one point with <b>no image</b> — you can't draw a ray from the centre to itself. Mathematically it's killed by $P$:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">centre = right null vector</div>
+      <div class="eqn" style="margin:6px 0;">$$ P\,\mathbf C=\mathbf 0 \quad\Rightarrow\quad \tilde{\mathbf C}=-\,M^{-1}\mathbf p_4 $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> plug $\mathbf C=(\tilde{\mathbf C},1)$ into $[M\mid\mathbf p_4]\mathbf C=\mathbf 0$ ⇒ $M\tilde{\mathbf C}+\mathbf p_4=\mathbf 0$ ⇒ $\tilde{\mathbf C}=-M^{-1}\mathbf p_4$.</div>
+  <p class="small">If $M$ is <b>singular</b> (not invertible), the centre lies <b>at infinity</b> — a direction, written $\mathbf C=(\mathbf d,0)$ found as the null vector of $M$ ($M\mathbf d=\mathbf 0$). That's an <i>affine</i> camera (next lecture).</p>
+  <div class="sketch-box tint-mint">
+    <span class="label">🧮 the same thing by Cramer's rule (no explicit inverse)</span>
+    <p style="margin:2px 0;">Writing $P=[\,\mathbf p_1\ \mathbf p_2\ \mathbf p_3\ \mathbf p_4\,]$ by columns, the centre's coordinates are ratios of $3\times3$ column determinants:</p>
+    <div class="eqn" style="margin:6px 0;">$$ X=\det[\mathbf p_2\,\mathbf p_3\,\mathbf p_4],\ \ Y=-\det[\mathbf p_1\,\mathbf p_3\,\mathbf p_4],\ \ Z=\det[\mathbf p_1\,\mathbf p_2\,\mathbf p_4],\ \ T=-\det[\mathbf p_1\,\mathbf p_2\,\mathbf p_3] $$</div>
+    <p class="small" style="margin:2px 0;">giving $\mathbf C=(X,Y,Z,T)^{T}$ (de-homogenise by $T$). This is just Cramer's rule applied to $M\tilde{\mathbf C}=-\mathbf p_4$, and it works even when you'd rather not invert $M$.</p>
+  </div>
+
+  <!-- 3 columns -->
+  <h2 class="section"><span class="num">3</span> the columns = vanishing points</h2>
+  <p>Project a point at infinity along an axis (e.g. $\mathbf X=(1,0,0,0)^{T}$ for the X-direction). The result is just a column of $P$:</p>
+  <div class="sketch-box tint-blue">
+    <span class="label">🧭 columns tell you where axes vanish</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>$\mathbf p_1$ = vanishing point of the <b>X-axis</b> (image of its point at infinity).</li>
+      <li>$\mathbf p_2$ = vanishing point of the <b>Y-axis</b>; $\ \mathbf p_3$ = vanishing point of the <b>Z-axis</b>.</li>
+      <li>$\mathbf p_4$ = image of the <b>world origin</b> $(0,0,0,1)^{T}$ (a real, finite point — scale is 1, not 0).</li>
+    </ul>
+  </div>
+  <p class="small">In general the vanishing point of any direction $\mathbf d$ is $M\mathbf d$ — <b>only $M$ matters</b> for vanishing points (the translation $\mathbf p_4$ drops out).</p>
+
+  <!-- 4 rows -->
+  <h2 class="section"><span class="num">4</span> the rows = planes; the principal point</h2>
+  <p>Each row $\mathbf r_i^{T}$ defines a plane $\mathbf r_i^{T}\mathbf X=0$ of world points that image onto a special image line:</p>
+  <ul class="notes">
+    <li>$\mathbf r_3^{T}\mathbf X=0$ — the <span class="def-term">principal plane</span> (parallel to the image plane, through the centre; its points image at infinity, scale = 0).</li>
+    <li>$\mathbf r_1^{T}\mathbf X=0$ and $\mathbf r_2^{T}\mathbf X=0$ — the two <span class="def-term">axis planes</span> (imaged onto the image $Y$- and $X$-axes).</li>
+  </ul>
+  <p>Let $\mathbf m_3^{T}$ be the third row of $M$ (i.e. $(p_{31},p_{32},p_{33})$) — it's the <b>normal direction of the principal plane</b>, so it points along the <span class="def-term">principal ray</span>. The <span class="def-term">principal point</span> is its image:</p>
+  <div class="eqn">$$ \mathbf x_0=M\,\mathbf m_3,\qquad \text{principal-ray direction}=\det(M)\,\mathbf m_3 $$</div>
+  <p class="small">(Multiplying by $\det(M)$ fixes the sign so the ray points the right way — towards the scene, not behind the camera.)</p>
+
+  <!-- 5 back projection + depth -->
+  <h2 class="section"><span class="num">5</span> back-projection &amp; depth</h2>
+  <p>A pixel $\mathbf x$ came from a whole <b>ray</b>. That ray passes through the centre $\tilde{\mathbf C}$ in the direction $M^{-1}\mathbf x$, so every world point on it is:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">back-projected ray</div>
+      <div class="eqn" style="margin:6px 0;">$$ \tilde{\mathbf X}(\lambda)=\tilde{\mathbf C}+\lambda\,M^{-1}\mathbf x $$</div>
+    </div>
+  </div>
+  <p>To get a single point you need one more constraint (a known plane, or a known distance). And the <span class="def-term">depth</span> of a scene point $\tilde{\mathbf X}$ is its distance along the principal axis — the projection onto the unit principal-ray direction:</p>
+  <div class="eqn">$$ \text{depth}=\hat{\mathbf m}_3^{T}\big(\tilde{\mathbf X}-\tilde{\mathbf C}\big) $$</div>
+
+  <!-- 6 decomposition -->
+  <h2 class="section"><span class="num">6</span> recovering K, R, C from P</h2>
+  <p>Since $M=KR$ with $K$ upper-triangular and $R$ orthogonal, this is exactly what an <b>RQ decomposition</b> produces:</p>
+  <div class="sketch-box tint-mint">
+    <span class="label">🧩 the recipe</span>
+    <ol class="notes" style="margin:4px 0 0;">
+      <li>RQ-decompose $M \to$ upper-triangular $\times$ orthogonal $= K\,R$. Read the 5 intrinsics off $K$, the rotation off $R$.</li>
+      <li>Camera centre $\tilde{\mathbf C}=-M^{-1}\mathbf p_4$; translation $\mathbf t=-R\tilde{\mathbf C}$.</li>
+      <li>Fix signs so $K$ has positive focal lengths (the decomposition is unique up to that sign convention).</li>
+    </ol>
+  </div>
+
+  <div class="banner">
+    <h3>$P$ is a treasure chest: centre = its null-space, columns = vanishing points, rows = planes, $M=KR$.</h3>
+    <p>$\tilde{\mathbf C}=-M^{-1}\mathbf p_4$; $\mathbf p_{1,2,3}$ = axis vanishing points; principal point $=M\mathbf m_3$; decompose with RQ.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>How do you find the camera centre from $P=[M\mid\mathbf p_4]$?
+        <div class="ans">it's the null-space of $P$: $\tilde{\mathbf C}=-M^{-1}\mathbf p_4$</div></li>
+      <li>What does the 4th column $\mathbf p_4$ of $P$ represent?
+        <div class="ans">the image of the world origin $(0,0,0,1)^{T}$</div></li>
+      <li>Which row of $P$ gives the principal plane, and what's special about it?
+        <div class="ans">the third row: $\mathbf r_3^{T}\mathbf X=0$ — the plane through the centre parallel to the image plane</div></li>
+      <li>How are the intrinsics $K$ and rotation $R$ recovered from $P$?
+        <div class="ans">RQ-decompose the left block $M=KR$ ($K$ upper-triangular, $R$ orthogonal)</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 13 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l14">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 14</div>
+    <h2>Camera Geometry — Part IV</h2>
+    <div class="lsub">worked problems on P · the affine camera · imaging a plane/line · views from a fixed centre (rotation &amp; zoom)</div>
+  </div>
+
+  <div class="sticky">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Two halves today. First we <b>practise</b> the "read-off-$P$" recipes from Lecture 13 on real problems (exam style!). Then we meet two important special cases: the <b>affine camera</b> and what happens when the camera <b>only rotates or zooms</b> — which quietly brings back the homography.</p>
+  </div>
+
+  <!-- 1 worked problem 1 -->
+  <h2 class="section"><span class="num">1</span> worked problem — extracting geometry from $P$</h2>
+  <div class="worked">
+    <span class="tag">given a projection matrix $P=[\,M\mid\mathbf p_4\,]$, find…</span>
+    <ol>
+      <li><b>Camera centre:</b> $\tilde{\mathbf C}=-M^{-1}\mathbf p_4$ (invert $M$ via cofactors/determinant). Leave it in world 3-D coords — don't "de-homogenise".</li>
+      <li><b>Vanishing point of the X-axis:</b> $P\,(1,0,0,0)^{T}=\mathbf p_1$ (the first column of $P$). To read it as an image point, <b>divide by its last coordinate</b>. <span class="illus">(e.g. $\mathbf p_1=(a,b,c)^{T}\to(a/c,\,b/c)$ — illustrative)</span></li>
+      <li><b>Image of the origin:</b> $P\,(0,0,0,1)^{T}=\mathbf p_4$. His example gives $(1,1,1)^{T}\to(1,1)$.</li>
+      <li><b>Vanishing point of a direction with direction-cosines $(4\!:\!3\!:\!2)$:</b> $P\,(4,3,2,0)^{T}=M(4,3,2)^{T}$, then divide by the last coordinate to read the image point.</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">Rule of thumb: <b>direction</b> (scale 0) ⇒ vanishing point; <b>finite point</b> (scale 1) ⇒ ordinary image point.</p>
+  </div>
+
+  <!-- 2 back projection worked -->
+  <h2 class="section"><span class="num">2</span> worked problem — back-projecting to a known distance</h2>
+  <div class="worked">
+    <span class="tag">image point $(2,7)$ is 40 units from the centre — find the 3-D point</span>
+    <ol>
+      <li>Camera centre: $\tilde{\mathbf C}=-M^{-1}\mathbf p_4$.</li>
+      <li>Ray direction: $\mathbf d=M^{-1}(2,7,1)^{T}$ (back-project the homogeneous pixel).</li>
+      <li>Walk 40 units along the unit direction: $\ \tilde{\mathbf X}=\tilde{\mathbf C}+40\,\dfrac{\mathbf d}{\lVert\mathbf d\rVert}$.</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">A single image gives a ray; the extra "distance = 40" constraint picks the one point on it. 🎯</p>
+  </div>
+  <div class="sketch-box tint-blue">
+    <span class="label">📐 bonus recipes on the same $P$</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>Principal plane</b> = last row: $\mathbf r_3^{T}\mathbf X=0$, e.g. $(1,-5,8,1)\Rightarrow x-5y+8z+1=0$.</li>
+      <li><b>Dihedral angle</b> between planes $x_1Ox_2$ and $x_3Ox_4$ (through the centre $O$): each plane is $\boldsymbol\pi=P^{T}(\mathbf x_i\times\mathbf x_j)$; take unit normals, $\cos^{-1}$ of their dot product. His answer: $\approx 53.75^{\circ}$.</li>
+      <li><b>Shortcut for a camera at the origin</b> (canonical, $f=1$, no $P$ given): a homogeneous image point $\mathbf x=(x,y,1)^{T}$ <i>is</i> the direction of its ray from $O$. So the plane through $O$ and two image points $\mathbf x_1,\mathbf x_2$ has <b>normal</b> $\ \mathbf n=\mathbf x_1\times\mathbf x_2$, and the <b>unit</b> normal is $\mathbf n/\lVert\mathbf n\rVert$. (This is $\boldsymbol\pi=P^{T}(\mathbf x_1\times\mathbf x_2)$ with $P^{T}\to I$, and it's what you use when only image points — not $P$ or $K$ — are given.)</li>
+    </ul>
+  </div>
+
+  <!-- 3 affine camera -->
+  <h2 class="section"><span class="num">3</span> the affine camera (centre at infinity)</h2>
+  <p>What if $M$ is <b>singular</b>? Then the centre sits at infinity and the camera projects with <b>parallel rays</b> instead of converging ones — an <span class="def-term">affine camera</span>. Canonically its last row is $(0,0,0,1)$.</p>
+  <div class="sketch-box tint-mint">
+    <span class="label">🧊 properties of the affine camera</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>Its <b>principal plane is the plane at infinity</b>, and the centre lies on it.</li>
+      <li><b>Points at infinity map to points at infinity</b> ⇒ <mark class="mint">parallel lines stay parallel in the image</mark> (no vanishing points).</li>
+      <li>The relation simplifies to plain Euclidean coordinates: $\ \tilde{\mathbf x}=M_{2\times3}\,\tilde{\mathbf X}+\mathbf t$ (no divide-by-$Z$!).</li>
+      <li><b>8 DOF</b> ($M_{2\times3}$ has 6, $\mathbf t$ has 2) — so <b>4 point correspondences</b> suffice; more points ⇒ linear least-squares. ($M_{2\times3}$ must be rank 2.)</li>
+    </ul>
+  </div>
+  <p class="small">A good model when the object is small &amp; far (weak perspective) — the maths gets much friendlier.</p>
+
+  <!-- 4 imaging a plane -->
+  <h2 class="section"><span class="num">4</span> imaging a plane = a homography</h2>
+  <p>Put a scene <b>plane</b> at $Z=0$ (always possible by choosing coordinates). Then a point on it is $(X,Y,0,1)^{T}$, and $P\mathbf X$ drops its 3rd column:</p>
+  <div class="eqn">$$ \mathbf x=[\,\mathbf p_1\ \mathbf p_2\ \mathbf p_4\,]\begin{bmatrix}X\\Y\\1\end{bmatrix}=H_{3\times3}\begin{bmatrix}X\\Y\\1\end{bmatrix} $$</div>
+  <div class="bubble"><span class="say">key takeaway:</span> the perspective image of a <b>plane</b> is a $3\times3$ <b>homography</b> between the plane and the image — exactly the map from Week 2. That's <i>why</i> rectifying a planar signboard worked.</div>
+
+  <!-- 5 imaging a line -->
+  <h2 class="section"><span class="num">5</span> imaging a 3-D line</h2>
+  <p>A 3-D line images to a 2-D line $\mathbf l$. The camera centre and the 3-D line span a <b>plane</b>, and that plane is simply:</p>
+  <div class="eqn">$$ \boldsymbol\pi=P^{T}\mathbf l $$</div>
+  <p class="small">Proof in one line: image points satisfy $\mathbf l^{T}\mathbf x=0=\mathbf l^{T}P\mathbf X=(P^{T}\mathbf l)^{T}\mathbf X$ — a point-on-plane relation with plane $P^{T}\mathbf l$.</p>
+
+  <!-- 6 same centre -->
+  <h2 class="section"><span class="num">6</span> two views from the same centre — rotation &amp; zoom</h2>
+  <p>If the camera stays put ($\tilde{\mathbf C}$ fixed) but <b>rotates</b> or changes intrinsics, the two images of any scene are related by a homography — <i>regardless of depth</i>:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">same-centre homography</div>
+      <div class="eqn" style="margin:6px 0;">$$ \mathbf x_2=H\,\mathbf x_1,\qquad H=K_2R_2\,(K_1R_1)^{-1} $$</div>
+    </div>
+  </div>
+  <p>Special case — pure <b>zoom</b> (no rotation, image planes parallel, focal-length ratio $k$): the calibration just scales,</p>
+  <div class="eqn">$$ K_2=K_1\,\operatorname{diag}(k,k,1),\qquad H=K_2K_1^{-1} $$</div>
+  <p class="small">so zooming multiplies displacements from the principal point by $k$ — a similarity about the principal point. This is the geometry behind panorama <b>stitching</b> (rotate-only) and digital zoom.</p>
+
+  <div class="banner">
+    <h3>read $P$ for centre/vanishing-points/planes; parallel rays ⇒ affine camera; a plane images as a homography.</h3>
+    <p>image of a plane = 3×3 H; image of a line's plane = $P^{T}\mathbf l$; rotate/zoom about a fixed centre = homography $K_2R_2(K_1R_1)^{-1}$.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>You project the point at infinity $(4,3,2,0)^{T}$. Is the result a vanishing point or an ordinary image point, and how do you read it off?
+        <div class="ans">a vanishing point ($=M(4,3,2)^{T}$); divide by its last coordinate to get the 2-D image location</div></li>
+      <li>What geometric feature makes a camera "affine", and what does it do to parallel lines?
+        <div class="ans">its centre is at infinity (M singular, last row $(0,0,0,1)$) → parallel projection → parallel lines stay parallel (no vanishing points)</div></li>
+      <li>The image of a planar scene is what kind of transformation?
+        <div class="ans">a $3\times3$ homography between the scene plane and the image</div></li>
+      <li>Two photos from the same centre (camera only rotates) are related how?
+        <div class="ans">by a homography $H=K_2R_2(K_1R_1)^{-1}$ — independent of scene depth (basis of panorama stitching)</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 14 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l15">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--mint)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 15</div>
+    <h2>Camera Geometry — Part V</h2>
+    <div class="lsub">conjugate-rotation homography · vanishing points &amp; lines · panorama mosaicing · single-view wrap-up</div>
+  </div>
+
+  <div class="sticky mint">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>We close single-view geometry with the <b>payoffs</b>: rotating a camera gives a special homography that literally <mark class="mint">encodes the rotation angle</mark>; vanishing points let us recover directions and rotations; and stitching it all together builds <b>panoramas</b>.</p>
+  </div>
+
+  <!-- 1 conjugate rotation -->
+  <h2 class="section"><span class="num">1</span> the conjugate-rotation homography</h2>
+  <p>Fix the camera centre and only <b>rotate</b> it by $R$ (intrinsics $K$ unchanged). Then $P_1=K[I\mid\mathbf 0]$ and $P_2=K[R\mid\mathbf 0]$, and the two images relate by:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">rotation homography</div>
+      <div class="eqn" style="margin:6px 0;">$$ \mathbf x'=H\mathbf x,\qquad H=K\,R\,K^{-1} $$</div>
+    </div>
+  </div>
+  <p>Because $H$ is <b>similar</b> to the rotation $R$, it shares $R$'s eigenvalues:</p>
+  <div class="eqn">$$ \text{eig}(H)=\big\{\,\mu,\ \mu e^{\,i\theta},\ \mu e^{-i\theta}\,\big\} $$</div>
+  <div class="sketch-box tint-blue">
+    <span class="label">🌀 two gifts from this "conjugate rotation"</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>The complex eigenvalues give the <b>rotation angle $\theta$</b> directly — you can measure how much the camera turned between two shots.</li>
+      <li>The eigenvector of the <b>real</b> eigenvalue is the <b>vanishing point of the rotation axis</b>.</li>
+    </ul>
+  </div>
+
+  <!-- 2 applications -->
+  <h2 class="section"><span class="num">2</span> two applications: rectification &amp; mosaicing</h2>
+  <div class="two-col">
+    <div class="sketch-box tint-yellow">
+      <span class="label">🖼️ synthetic fronto-parallel views</span>
+      <p style="margin:2px 0;">Photograph an oblique planar surface, pick target corners with the true aspect ratio, compute the homography, and warp → a straightened, <b>fronto-parallel</b> view (rectification, as in Week 2).</p>
+    </div>
+    <div class="sketch-box tint-mint">
+      <span class="label">🌄 panoramic mosaicing</span>
+      <p style="margin:2px 0;">A camera with a narrow field of view <b>rotates</b> to capture a wide scene. Each view relates to a reference by a homography $H_i$; warp them all onto one reference plane and blend → a single <b>panorama</b>. (Rotation-only ⇒ depth doesn't matter.)</p>
+    </div>
+  </div>
+
+  <!-- 3 vanishing points -->
+  <h2 class="section"><span class="num">3</span> vanishing points, properly</h2>
+  <p>A <span class="def-term">vanishing point</span> is the image of a <b>point at infinity</b> — geometrically, where the line through the camera centre <i>parallel</i> to a scene line $L$ meets the image plane. All lines in direction $\mathbf d$ share one vanishing point:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">vanishing point of direction d</div>
+      <div class="eqn" style="margin:6px 0;">$$ \mathbf v=K\mathbf d\quad(\text{no rotation}),\qquad \mathbf v=KR\,\mathbf d\quad(\text{rotated camera}) $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> a vanishing point depends only on <b>direction + $K$ (+ rotation)</b> — <b>not</b> on the camera's position. Translate the camera and vanishing points stay put. 🌙 That's why the <b>moon seems to follow you</b> as you walk: pure translation, so its (near-infinite) direction — and thus its image position — doesn't change.</div>
+  <p class="small"><b>Payoff:</b> if you can measure vanishing points (intersect images of parallel lines) and you know $K$, then $\mathbf d\propto K^{-1}\mathbf v$ recovers 3-D directions — and two such directions constrain the <b>rotation</b> $R$ (it's orthonormal + has one angle).</p>
+
+  <!-- 4 vanishing lines -->
+  <h2 class="section"><span class="num">4</span> the vanishing line of a plane (the horizon)</h2>
+  <p>Every vanishing point of every line lying in a plane $\pi$ falls on a single image line — the <span class="def-term">vanishing line</span> (the plane's <b>horizon</b>). Geometrically it's where the plane <i>through the camera centre parallel to $\pi$</i> meets the image plane.</p>
+  <p>The 3-D plane through the centre and an image line $\mathbf l$ is $\boldsymbol\pi=P^{T}\mathbf l$; its first three entries are the <b>plane normal</b>. For a canonical camera $K[I\mid0]$ the normal direction is simply $K^{T}\mathbf l$.</p>
+  <div class="worked">
+    <span class="tag">worked exercise — normal of a plane from its horizon</span>
+    <p style="margin:2px 0;">A line images as $3x+4y=5$, i.e. $\mathbf l=(3,4,-5)^{T}$, and it is the <b>horizon</b> of some plane. Find that plane's normal.</p>
+    <ol>
+      <li>Plane through centre &amp; line: $\boldsymbol\pi=P^{T}\mathbf l$ → (professor's numbers) $7x+4y+8\ldots z+\ldots=0$.</li>
+      <li>The <b>normal</b> is the first three components of $\boldsymbol\pi$; normalise to a unit vector. ✅</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">To get a vanishing line in practice: take several sets of parallel lines in the plane, find each set's vanishing point, and join them.</p>
+  </div>
+
+  <!-- 5 summary -->
+  <h2 class="section"><span class="num">5</span> single-view geometry — the whole cheat-sheet</h2>
+  <div class="sketch-box tint-pink">
+    <span class="label">📌 everything encoded in $P=[\,M\mid\mathbf p_4\,]$</span>
+    <table class="hand" style="margin:8px 0 0;">
+      <thead><tr><th>you want…</th><th>read it as</th></tr></thead>
+      <tbody>
+        <tr><td>camera centre</td><td>$\tilde{\mathbf C}=-M^{-1}\mathbf p_4$ (affine: null-vector of $M$)</td></tr>
+        <tr><td>vanishing point of direction $\mathbf d$</td><td>$M\mathbf d$ (columns $\mathbf p_1,\mathbf p_2,\mathbf p_3$ = X,Y,Z axes)</td></tr>
+        <tr><td>image of world origin</td><td>$\mathbf p_4$</td></tr>
+        <tr><td>principal plane / point</td><td>$\mathbf r_3^{T}\mathbf X=0$ / $\ \mathbf x_0=M\mathbf m_3$</td></tr>
+        <tr><td>back-projected ray</td><td>$\tilde{\mathbf X}(\lambda)=\tilde{\mathbf C}+\lambda M^{-1}\mathbf x$</td></tr>
+        <tr><td>plane of an image line $\mathbf l$</td><td>$\boldsymbol\pi=P^{T}\mathbf l$</td></tr>
+        <tr><td>recover $K,R$</td><td>RQ-decompose $M=KR$</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:8px;"><b>DOF:</b> full projective camera = 11 (5 intrinsic + 6 extrinsic), needs ≥ 6 point correspondences to estimate. <b>Affine camera</b> = 8 DOF, needs ≥ 4. Next up: <b>two-view / stereo</b> geometry. ➡️</p>
+  </div>
+
+  <div class="banner">
+    <h3>rotate a camera → $H=KRK^{-1}$ (its eigenvalues give the angle); vanishing points depend on direction, not position.</h3>
+    <p>$\mathbf v=KR\mathbf d$; a plane's horizon = image of the parallel plane through the centre; stitch rotation-homographies → panoramas.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>Two photos from the same centre differ by a camera rotation $R$. What is the homography between them, and what can its eigenvalues tell you?
+        <div class="ans">$H=KRK^{-1}$; its complex eigenvalues $\mu e^{\pm i\theta}$ reveal the rotation angle $\theta$</div></li>
+      <li>Why does a vanishing point not move when you translate (but don't rotate) the camera?
+        <div class="ans">it depends only on direction and $K$ ($\mathbf v=K\mathbf d$), not on camera position — the "moon follows you" effect</div></li>
+      <li>What is the vanishing line of a plane, geometrically?
+        <div class="ans">the horizon — where the plane through the camera centre parallel to that plane meets the image; all the plane's vanishing points lie on it</div></li>
+      <li>Given a known $K$ and a measured vanishing point $\mathbf v$, how do you get the 3-D direction?
+        <div class="ans">$\mathbf d \propto K^{-1}\mathbf v$ (then normalise)</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 15 · end of Week 3 ✏️🎉</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+</body>
+</html>

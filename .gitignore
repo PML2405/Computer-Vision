@@ -1,0 +1,15 @@
+# --- macOS ---
+.DS_Store
+
+# --- Claude / local tooling ---
+.claude/
+
+# --- generation machinery & scratch (kept local; regenerates the notes) ---
+.build/
+
+# --- source course material: large + copyrighted NPTEL PDFs, kept local ---
+source/
+
+# --- python ---
+__pycache__/
+*.pyc

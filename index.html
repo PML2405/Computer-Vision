@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Vision — Handwritten Study Notes (NPTEL, IIT Kharagpur)</title>
+<meta name="description" content="iPad-style handwritten study notes for the NPTEL Computer Vision course (Prof. Jayanta Mukhopadhyay, IIT Kharagpur). Self-contained, re-taught from scratch, with crisp math and diagrams.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EC; --rule:#E2D9C4; --margin:#F3B8B0;
+    --ink:#2E2A3D; --ink-soft:#5b5678;
+    --yellow:#FFE98A; --pink:#FFB8CE; --mint:#A9E8CE; --blue:#A9D4F5;
+    --coral:#FF7A5C; --tape1:#F6C89F; --tape2:#CBE7DE; --tape3:#F3AEBB;
+  }
+  * { box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background:#DDD6C4; }
+  body{
+    font-family:'Kalam', cursive; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:28px 12px 90px;
+  }
+  svg.defs{ position:absolute; width:0; height:0; }
+
+  .page{
+    position:relative; width:100%; max-width:960px;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 33px, var(--rule) 34px, var(--paper) 35px);
+    background-color:var(--paper);
+    border-radius:6px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.25), 0 2px 0 rgba(0,0,0,.05);
+    padding:46px 40px 46px 74px;
+    overflow:hidden;
+    margin-bottom:30px;
+  }
+  .margin-rule{ position:absolute; top:0; bottom:0; left:50px; width:2px; background:var(--margin); opacity:.75; }
+  .doodle{ position:absolute; opacity:.85; pointer-events:none; }
+
+  /* ---------- cover ---------- */
+  .cover{ text-align:center; padding:8px 10px 2px; }
+  .cover .kicker{ font-family:'Kalam',cursive; font-size:16px; color:var(--ink-soft); letter-spacing:1px; }
+  .cover h1{
+    font-family:'Caveat',cursive; font-weight:700; font-size:74px;
+    margin:4px 0 0; line-height:.92; color:var(--ink);
+  }
+  .cover .sub{ font-size:20px; color:var(--ink-soft); margin-top:10px; }
+  .cover .prof{ font-size:15.5px; color:var(--ink-soft); margin-top:4px; font-style:italic;}
+
+  /* ---------- sticky note ---------- */
+  .sticky{
+    position:relative; background:var(--yellow); padding:16px 22px 18px;
+    border-radius:2px 14px 3px 12px / 10px 3px 14px 4px; filter:url(#rough);
+    transform:rotate(-1deg); box-shadow: 4px 6px 10px rgba(0,0,0,.14);
+    margin:30px auto 34px; max-width:680px;
+  }
+  .sticky::before{
+    content:""; position:absolute; top:-14px; left:50%; width:52px; height:20px;
+    background:var(--tape3); opacity:.85; transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 3px rgba(0,0,0,.15);
+  }
+  .sticky .lead{ font-family:'Caveat', cursive; font-size:25px; font-weight:700; margin-bottom:4px; }
+  .sticky p{ margin:5px 0; font-size:16.5px; line-height:1.5; }
+
+  /* ---------- section heading ---------- */
+  h2.section{
+    font-family:'Caveat', cursive; font-weight:700; font-size:33px;
+    margin:30px 0 4px 0; display:flex; align-items:center; gap:10px;
+  }
+  .small{ font-size:14.5px; color:var(--ink-soft); }
+  b, strong{ color:#231f33; }
+  a{ color:var(--ink); }
+
+  /* ---------- week card grid ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));
+    gap:26px 24px; margin:22px 0 8px;
+  }
+  .wk{
+    position:relative; display:flex; flex-direction:column;
+    background:#fff; border:2.6px solid var(--ink); filter:url(#rough);
+    border-radius:8px 16px 10px 18px/14px 8px 16px 10px; padding:20px 20px 16px;
+    box-shadow:3px 5px 0 rgba(0,0,0,.10); text-decoration:none; color:var(--ink);
+    transform:rotate(-0.5deg); transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .wk:nth-child(even){ transform:rotate(0.6deg); }
+  .wk:hover{ transform:translateY(-4px) rotate(0deg); box-shadow:5px 9px 0 rgba(0,0,0,.14); }
+  .wk::before{  /* washi tape */
+    content:""; position:absolute; top:-12px; left:24px; width:66px; height:22px;
+    opacity:.9; transform:rotate(-4deg); box-shadow:0 2px 3px rgba(0,0,0,.12);
+  }
+  .wk.c1::before{ background:var(--yellow);} .wk.c2::before{ background:var(--blue);}
+  .wk.c3::before{ background:var(--mint);}  .wk.c4::before{ background:var(--pink);}
+  .wk.c5::before{ background:var(--tape1);} .wk.c6::before{ background:var(--tape2);}
+  .wk .wknum{ font-family:'Caveat',cursive; font-weight:700; font-size:34px; line-height:1; }
+  .wk .wknum small{ font-family:'Kalam',cursive; font-size:13px; color:var(--ink-soft); letter-spacing:1px; display:block; }
+  .wk .wktitle{ font-family:'Caveat',cursive; font-weight:700; font-size:23px; margin:8px 0 2px; line-height:1.05; }
+  .wk .lecs{ font-size:13px; color:var(--ink-soft); font-style:italic; margin-bottom:8px; }
+  .wk ul{ margin:2px 0 12px; padding-left:18px; font-size:14.5px; line-height:1.45; }
+  .wk ul li{ margin:2px 0; }
+  .wk .open{
+    margin-top:auto; align-self:flex-start; font-family:'Caveat',cursive; font-weight:700;
+    font-size:19px; color:#B4590E; border-bottom:2px dotted var(--coral); padding-bottom:1px;
+  }
+  .wk:hover .open{ background:var(--yellow); }
+
+  /* ---------- generic sketch box ---------- */
+  .sketch-box{
+    position:relative; border:2.6px solid var(--ink);
+    border-radius:225px 15px 225px 15px/15px 225px 15px 225px; filter:url(#rough);
+    padding:16px 24px; background:#FFFEFA; margin:20px 0;
+  }
+  .sketch-box.tint-mint{ background:#F1FAF5; } .sketch-box.tint-blue{ background:#EFF7FF; }
+  .sketch-box .label{ display:inline-block; font-family:'Caveat',cursive; font-size:23px; font-weight:700; margin-bottom:4px; }
+  .sketch-box p{ font-size:16px; margin:4px 0; line-height:1.5; }
+  .sketch-box ul{ font-size:15.5px; margin:4px 0; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px 8px; margin:8px 0 2px; }
+  .chip{ font-size:13.5px; background:#fff; border:2px solid var(--ink); filter:url(#rough);
+    border-radius:20px; padding:2px 12px; color:var(--ink-soft); }
+
+  /* ---------- banner ---------- */
+  .banner{
+    position:relative; background:var(--coral); color:#FFF7F0; border-radius:16px; filter:url(#rough);
+    padding:18px 26px; text-align:center; margin:30px 0 8px; transform:rotate(0.35deg);
+  }
+  .banner h3{ font-family:'Caveat', cursive; font-size:28px; margin:0 0 4px; line-height:1.22; }
+  .banner p{ color:#FFF0E8; font-size:14.5px; margin:0; }
+
+  .foot{ text-align:center; font-size:13.5px; color:var(--ink-soft); margin-top:26px; line-height:1.6; }
+  .foot a{ color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .page{ padding:36px 18px 36px 46px; } .margin-rule{ left:26px; }
+    .cover h1{ font-size:52px; }
+    .grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs">
+  <defs>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/></filter>
+  </defs>
+</svg>
+
+<div class="page" id="top">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:18px; right:34px;" width="34" height="34" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+  <svg class="doodle" style="top:74px; left:60px;" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.8"/></svg>
+
+  <!-- cover -->
+  <div class="cover">
+    <div class="kicker">NPTEL &middot; IIT KHARAGPUR</div>
+    <h1>Computer Vision</h1>
+    <div class="sub"><b>Handwritten Study Notes</b> &mdash; re-taught from scratch, in one place</div>
+    <div class="prof">Prof. Jayanta Mukhopadhyay &middot; Weeks 1&ndash;6 &middot; Lectures 1&ndash;28</div>
+  </div>
+
+  <!-- intro sticky -->
+  <div class="sticky">
+    <div class="lead">📒 how to use these</div>
+    <p>Each week is a <b>single, self-contained page</b> &mdash; open it in any browser, no internet needed
+      for the content itself (math &amp; fonts load from a CDN). They&rsquo;re written to <b>replace the
+      slides and videos</b>: every concept is re-taught from the ground up, with worked math, redrawn
+      diagrams, and real slide figures where they help. Tap a week to start.</p>
+  </div>
+
+  <!-- week cards -->
+  <h2 class="section">🗂️ the six weeks</h2>
+  <div class="grid">
+
+    <a class="wk c1" href="notes/week1_notes.html">
+      <div class="wknum">Week 1<small>LECTURES 1–4</small></div>
+      <div class="wktitle">Fundamentals of Image Processing &amp; Image Transforms</div>
+      <div class="lecs">image processing basics + transforms</div>
+      <ul>
+        <li>image formation, histograms</li>
+        <li>thresholding &amp; Otsu, segmentation</li>
+        <li>gradients, Sobel/Prewitt, convolution &amp; filtering</li>
+        <li>DFT · DCT · DST transforms</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+    <a class="wk c2" href="notes/week2_notes.html">
+      <div class="wknum">Week 2<small>LECTURES 5–10</small></div>
+      <div class="wktitle">Projective Geometry &amp; Homography</div>
+      <div class="lecs">the geometry of the image plane</div>
+      <ul>
+        <li>homogeneous coords, points/lines at infinity</li>
+        <li>point–line duality, cross-product join &amp; meet, conics</li>
+        <li>the 3×3 homography H (8 DOF), DLT</li>
+        <li>transformation hierarchy, cross-ratio, rectification</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+    <a class="wk c3" href="notes/week3_notes.html">
+      <div class="wknum">Week 3<small>LECTURES 11–15</small></div>
+      <div class="wktitle">Camera Geometry — Single View</div>
+      <div class="lecs">how a 3-D world lands on the sensor</div>
+      <ul>
+        <li>pinhole model, intrinsics K, extrinsics [R|t]</li>
+        <li>the projection matrix P = K[R|t]</li>
+        <li>vanishing points &amp; lines</li>
+        <li>camera calibration</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+    <a class="wk c4" href="notes/week4_notes.html">
+      <div class="wknum">Week 4<small>LECTURES 16–19</small></div>
+      <div class="wktitle">Stereo Geometry — Epipolar Geometry &amp; the Fundamental Matrix</div>
+      <div class="lecs">two views of the same scene</div>
+      <ul>
+        <li>epipolar constraint, epipoles &amp; lines</li>
+        <li>the fundamental &amp; essential matrices</li>
+        <li>F ↔ E conversion, the skew matrix</li>
+        <li>disparity &amp; depth from stereo</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+    <a class="wk c5" href="notes/week5_notes.html">
+      <div class="wknum">Week 5<small>LECTURES 20–23</small></div>
+      <div class="wktitle">Stereo Geometry — Estimating F, Recovering Structure</div>
+      <div class="lecs">from correspondences to 3-D</div>
+      <ul>
+        <li>the 8-point algorithm &amp; normalization</li>
+        <li>enforcing rank-2 with SVD, the 7-point method</li>
+        <li>triangulation, back-projected rays</li>
+        <li>recovering structure &amp; motion</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+    <a class="wk c6" href="notes/week6_notes.html">
+      <div class="wknum">Week 6<small>LECTURES 24–28</small></div>
+      <div class="wktitle">Feature Detection &amp; Description</div>
+      <div class="lecs">finding &amp; describing what matters</div>
+      <ul>
+        <li>Harris corners, scale-space &amp; SIFT (DoG)</li>
+        <li>descriptors: SIFT, SURF, HOG, LBP</li>
+        <li>Bag of Visual Words, VLAD</li>
+        <li>content-based image retrieval</li>
+      </ul>
+      <span class="open">open notes →</span>
+    </a>
+
+  </div>
+
+  <!-- coming soon -->
+  <div class="sketch-box tint-mint">
+    <span class="label">🚧 coming next — Weeks 7–12</span>
+    <p>The full NPTEL course runs 12 weeks. These four weeks are queued to be written in the same style:</p>
+    <div class="chips">
+      <span class="chip">W7 · Feature Matching &amp; Model Fitting</span>
+      <span class="chip">W8 · Color Fundamentals &amp; Processing</span>
+      <span class="chip">W9 · Range Image Processing</span>
+      <span class="chip">W10 · Clustering &amp; Classification</span>
+      <span class="chip">W11 · Dimensionality Reduction &amp; Sparse Representation</span>
+      <span class="chip">W12 · Deep Neural Architectures</span>
+    </div>
+  </div>
+
+  <div class="banner">
+    <h3>notes so complete you never have to open the slides again</h3>
+    <p>re-taught, not summarized &middot; math worked out &middot; diagrams redrawn &middot; verified against transcript &amp; assignments</p>
+  </div>
+
+  <div class="foot">
+    Study notes derived from the <b>NPTEL Computer Vision</b> course by Prof. Jayanta Mukhopadhyay, IIT Kharagpur,
+    for personal educational use.<br>
+    Built as handwritten-style HTML &middot; math by <a href="https://katex.org">KaTeX</a> &middot; fonts Caveat &amp; Kalam.
+  </div>
+</div>
+
+</body>
+</html>

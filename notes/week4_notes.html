@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Vision — Week 4 Handwritten Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<!-- KaTeX for crisp math inside the hand-drawn boxes -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "\\[", right: "\\]", display: true},
+          {left: "$", right: "$", display: false},
+          {left: "\\(", right: "\\)", display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+<style>
+  :root{
+    --paper:#FBF7EC; --rule:#E2D9C4; --margin:#F3B8B0;
+    --ink:#2E2A3D; --ink-soft:#5b5678;
+    --yellow:#FFE98A; --pink:#FFB8CE; --mint:#A9E8CE; --blue:#A9D4F5;
+    --coral:#FF7A5C; --tape1:#F6C89F; --tape2:#CBE7DE; --tape3:#F3AEBB;
+  }
+  * { box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background:#DDD6C4; }
+  body{
+    font-family:'Kalam', cursive; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:28px 12px 90px;
+  }
+  svg.defs{ position:absolute; width:0; height:0; }
+
+  .page{
+    position:relative; width:100%; max-width:920px;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 33px, var(--rule) 34px, var(--paper) 35px);
+    background-color:var(--paper);
+    border-radius:6px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.25), 0 2px 0 rgba(0,0,0,.05);
+    padding:46px 40px 46px 74px;
+    overflow:hidden;
+    margin-bottom:30px;
+  }
+  .margin-rule{ position:absolute; top:0; bottom:0; left:50px; width:2px; background:var(--margin); opacity:.75; }
+  .doodle{ position:absolute; opacity:.85; pointer-events:none; }
+
+  /* ---------- week cover ---------- */
+  .cover{ text-align:center; padding:14px 10px 8px; }
+  .cover .kicker{ font-family:'Kalam',cursive; font-size:16px; color:var(--ink-soft); letter-spacing:1px; }
+  .cover h1{
+    font-family:'Caveat',cursive; font-weight:700; font-size:72px;
+    margin:2px 0 0; line-height:.95; color:var(--ink);
+  }
+  .cover .sub{ font-size:19px; color:var(--ink-soft); margin-top:8px; }
+  .cover .prof{ font-size:15.5px; color:var(--ink-soft); margin-top:4px; font-style:italic;}
+
+  /* ---------- table of contents ---------- */
+  .toc{ margin:22px auto 6px; max-width:640px; }
+  .toc .toc-card{
+    border:2.6px solid var(--ink); border-radius:225px 15px 225px 15px/15px 225px 15px 225px;
+    filter:url(#rough); background:#FFFEFA; padding:16px 24px;
+  }
+  .toc h3{ font-family:'Caveat',cursive; font-size:26px; margin:0 0 8px; }
+  .toc ol{ margin:0; padding-left:22px; font-size:17px; }
+  .toc li{ margin:6px 0; }
+  .toc a{ color:var(--ink); text-decoration:none; border-bottom:2px dotted var(--ink-soft); }
+  .toc a:hover{ background:var(--yellow); }
+
+  /* ---------- lecture divider ---------- */
+  .lec-divider{
+    margin:14px 0 6px; padding:14px 22px; position:relative;
+    background:var(--ink); color:var(--paper);
+    border-radius:16px 10px 16px 10px/10px 16px 10px 16px;
+    filter:url(#rough); transform:rotate(-.4deg);
+  }
+  .lec-divider .lno{ font-family:'Kalam',cursive; font-size:14px; letter-spacing:2px; opacity:.85; }
+  .lec-divider h2{ font-family:'Caveat',cursive; font-weight:700; font-size:40px; margin:2px 0 0; line-height:1; }
+  .lec-divider .lsub{ font-size:14.5px; opacity:.9; margin-top:6px; }
+
+  /* ---------- headings ---------- */
+  h2.section{
+    font-family:'Caveat', cursive; font-weight:700; font-size:31px;
+    margin:32px 0 8px 0; display:flex; align-items:center; gap:10px;
+  }
+  h2.section .num{
+    font-family:'Kalam',cursive; font-size:15px; background:var(--ink); color:var(--paper);
+    border-radius:50%; width:27px; height:27px; min-width:27px;
+    display:flex; align-items:center; justify-content:center; transform:rotate(-6deg);
+  }
+  h3.sub{ font-family:'Caveat',cursive; font-size:24px; margin:18px 0 4px; color:var(--ink); }
+
+  p{ font-size:17px; line-height:1.62; margin:8px 0; }
+  ul.notes, ol.notes{ font-size:16.5px; line-height:1.55; }
+  ul.notes li, ol.notes li{ margin:5px 0; }
+  .small{ font-size:14.5px; color:var(--ink-soft); }
+  b, strong{ color:#231f33; }
+
+  /* ---------- sticky note ---------- */
+  .sticky{
+    position:relative; background:var(--yellow); padding:18px 20px 20px;
+    border-radius:2px 14px 3px 12px / 10px 3px 14px 4px; filter:url(#rough);
+    transform:rotate(-1.1deg); box-shadow: 4px 6px 10px rgba(0,0,0,.14);
+    margin:18px auto 30px; max-width:660px;
+  }
+  .sticky.blue{ background:var(--blue); } .sticky.mint{ background:var(--mint); } .sticky.pink{ background:var(--pink); }
+  .sticky::before{
+    content:""; position:absolute; top:-14px; left:50%; width:48px; height:20px;
+    background:var(--tape3); opacity:.85; transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 3px rgba(0,0,0,.15);
+  }
+  .sticky p{ margin:4px 0; font-size:16.5px; }
+  .sticky .lead{ font-family:'Caveat', cursive; font-size:24px; font-weight:700; margin-bottom:6px; }
+
+  /* ---------- generic sketch box ---------- */
+  .sketch-box{
+    position:relative; border:2.6px solid var(--ink);
+    border-radius:225px 15px 225px 15px/15px 225px 15px 225px; filter:url(#rough);
+    padding:16px 22px; background:#FFFEFA; margin:16px 0;
+  }
+  .sketch-box.tint-blue{ background:#EFF7FF; } .sketch-box.tint-mint{ background:#F1FAF5; }
+  .sketch-box.tint-pink{ background:#FFF3F6; } .sketch-box.tint-yellow{ background:#FFFBEC; }
+  .sketch-box .label{
+    display:inline-block; font-family:'Caveat',cursive; font-size:22px; font-weight:700;
+    margin-bottom:2px;
+  }
+  .def-term{ font-weight:700; color:#231f33; }
+
+  /* highlighter marker span */
+  mark{ background:linear-gradient(180deg, transparent 55%, var(--pink) 55%); padding:0 2px; }
+  mark.yellow{ background:linear-gradient(180deg, transparent 55%, var(--yellow) 55%); }
+  mark.mint{ background:linear-gradient(180deg, transparent 55%, var(--mint) 55%); }
+  mark.blue{ background:linear-gradient(180deg, transparent 55%, var(--blue) 55%); }
+
+  /* ---------- equation cards (KaTeX inside) ---------- */
+  .eq-card{ display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; justify-content:center; margin:18px 0; }
+  .index-card{
+    background:#fff; border:2.5px solid var(--ink); filter:url(#rough);
+    border-radius:8px 16px 10px 18px/14px 8px 16px 10px; padding:14px 22px;
+    min-width:230px; box-shadow:3px 5px 0 rgba(0,0,0,.08); transform:rotate(-0.5deg);
+  }
+  .index-card .cap{ font-family:'Caveat',cursive; font-size:20px; text-align:center; margin:0 0 6px; color:var(--ink-soft); }
+  .index-card .katex{ font-size:1.12em; }
+  .eqn{ text-align:center; margin:14px 0; }
+  .eqn .katex-display{ margin:.3em 0; }
+  .eqn-note{ text-align:center; font-size:14.5px; color:var(--ink-soft); margin-top:2px; }
+
+  /* speech bubble — "read the formula out loud" */
+  .bubble{
+    position:relative; background:var(--blue); border:2.4px solid var(--ink); filter:url(#rough);
+    border-radius:22px; padding:13px 20px; max-width:560px; margin:16px auto; font-size:16.5px;
+  }
+  .bubble:after{
+    content:""; position:absolute; left:40px; bottom:-16px; width:0; height:0;
+    border:14px solid transparent; border-top-color:var(--blue); filter:drop-shadow(0 2px 0 var(--ink));
+  }
+  .bubble .say{ font-family:'Caveat',cursive; font-size:20px; font-weight:700; }
+
+  /* worked-example card */
+  .worked{
+    border:2.6px solid var(--ink); border-left:10px solid var(--coral); border-radius:12px;
+    filter:url(#rough); background:#FFFDF6; padding:14px 20px; margin:18px 0;
+  }
+  .worked .tag{
+    font-family:'Caveat',cursive; font-size:22px; font-weight:700; color:#B4590E;
+    display:block; margin-bottom:4px;
+  }
+  .worked .illus{ font-size:13px; color:var(--ink-soft); font-style:italic; }
+  .worked ol{ padding-left:20px; } .worked li{ margin:7px 0; font-size:16px; }
+
+  /* ---------- figure cards (REAL slide figures) ---------- */
+  .fig{
+    border:2.4px solid var(--ink); background:#fff; filter:url(#rough);
+    border-radius:12px 14px 12px 14px; padding:10px 10px 8px; margin:16px 0; transform:rotate(-.3deg);
+  }
+  .fig img{ width:100%; height:auto; display:block; border-radius:4px; }
+  .fig figcaption{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:7px; font-style:italic; }
+  .fig-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin:16px 0; align-items:end; }
+  .fig-row .fig{ margin:0; }
+  .fig .pin{ display:inline-block; background:var(--tape2); height:16px; width:44px; transform:rotate(-4deg); margin:0 auto 4px; opacity:.85; }
+
+  /* diagram card (redrawn inline SVG) */
+  .diagram{
+    border:2.6px solid var(--ink); filter:url(#rough); background:#fff;
+    border-radius:18px 10px 18px 10px/10px 18px 10px 18px; padding:14px 16px 10px; margin:18px 0;
+  }
+  .diagram h4{ font-family:'Caveat',cursive; font-size:22px; margin:0 0 6px; }
+  .diagram svg{ width:100%; height:auto; display:block; }
+  .diagram .cap{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:6px; font-style:italic; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:680px){ .two-col{ grid-template-columns:1fr; } }
+
+  /* ---------- comparison table ---------- */
+  table.hand{ width:100%; border-collapse:collapse; margin:18px 0; font-size:15.5px; }
+  table.hand th, table.hand td{ border:2px solid var(--ink); padding:9px 10px; text-align:left; vertical-align:top; }
+  table.hand thead th{ background:var(--yellow); font-family:'Caveat',cursive; font-size:19px; }
+  table.hand tbody tr:nth-child(odd) td:first-child{ background:#fdf6e6; }
+
+  /* ---------- takeaway banner ---------- */
+  .banner{
+    position:relative; background:var(--coral); color:#FFF7F0; border-radius:16px; filter:url(#rough);
+    padding:20px 26px; text-align:center; margin:32px 0 24px; transform:rotate(0.35deg);
+  }
+  .banner h3{ font-family:'Caveat', cursive; font-size:29px; margin:0 0 6px; line-height:1.22; }
+  .banner p{ color:#FFF0E8; font-size:15px; margin:0; }
+
+  /* ---------- quiz card ---------- */
+  .quiz{
+    border:2.6px dashed var(--ink); border-radius:14px; padding:18px 22px; background:#FFFDF3;
+    margin:22px 0 6px; position:relative;
+  }
+  .quiz:before{
+    content:"✎ quick check"; position:absolute; top:-14px; left:18px; background:var(--paper);
+    padding:0 8px; font-family:'Caveat', cursive; font-size:20px; font-weight:700;
+  }
+  .quiz ol{ margin:6px 0 0; padding-left:22px; font-size:16px; }
+  .quiz li{ margin:11px 0; }
+  .quiz .ans{ color:#2E7D53; font-weight:700; } .quiz .ans:before{ content:"→ "; }
+
+  .signoff{ text-align:right; font-family:'Caveat', cursive; font-size:20px; color:var(--ink-soft); margin-top:24px; }
+  .backtop{ display:block; text-align:right; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-top:6px; }
+  .backtop:hover{ color:var(--coral); }
+
+  @media (max-width:640px){
+    .page{ padding:36px 18px 36px 46px; } .margin-rule{ left:26px; }
+    .cover h1{ font-size:52px; } .lec-divider h2{ font-size:30px; } .two-col{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs">
+  <defs>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/></filter>
+    <filter id="rough2"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="14" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6"/></filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#2E2A3D" stroke-width="1.5"/></marker>
+    <marker id="arrowc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#FF7A5C" stroke-width="1.6"/></marker>
+  </defs>
+</svg>
+
+<!-- WEEK COVER + TOC -->
+<div class="page" id="top">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:18px; right:34px;" width="34" height="34" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+  <svg class="doodle" style="top:70px; left:60px;" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.8"/></svg>
+  <div class="cover">
+    <div class="kicker">COMPUTER VISION &middot; NPTEL &middot; IIT KHARAGPUR</div>
+    <h1>Week 4</h1>
+    <div class="sub"><b>Stereo Geometry</b> &mdash; epipolar geometry &amp; the fundamental matrix</div>
+    <div class="prof">Prof. Jayanta Mukhopadhyay &middot; Lectures 16&ndash;19</div>
+  </div>
+  <div class="toc"><div class="toc-card">
+    <h3>&#128210; what's inside this week</h3>
+    <ol>
+      <li><a href="#l16">Lecture 16 &mdash; Stereo Geometry &middot; Part I</a><br><span class="small">two cameras, epipolar plane/lines/epipoles, fundamental &amp; essential matrix</span></li>
+      <li><a href="#l17">Lecture 17 &mdash; Stereo Geometry &middot; Part II</a><br><span class="small">computing F, its properties (rank-2, null-vectors), worked problems</span></li>
+      <li><a href="#l18">Lecture 18 &mdash; Stereo Geometry &middot; Part III</a><br><span class="small">essential matrix, pure-translation stereo, depth from disparity</span></li>
+      <li><a href="#l19">Lecture 19 &mdash; Stereo Geometry &middot; Part IV</a><br><span class="small">estimating F: the normalized 8-point algorithm</span></li>
+    </ol>
+  </div></div>
+</div>
+
+<div class="page" id="l16">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 16</div>
+    <h2>Stereo Geometry — Part I</h2>
+    <div class="lsub">two cameras · epipolar geometry · the fundamental matrix F and the essential matrix E</div>
+  </div>
+
+  <div class="sticky blue">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>One camera loses depth. <b>Two</b> cameras get it back — and the geometry linking their two images is beautifully constrained: given a point in the left image, its match in the right image is forced onto a single <b>line</b>, not a whole plane. That constraint is captured by one $3\times3$ matrix, the <mark class="blue">fundamental matrix $F$.</mark></p>
+    <p class="small">This "your match must lie on this line" rule is what makes stereo matching tractable. 👀👀</p>
+  </div>
+
+  <!-- 1 setup -->
+  <h2 class="section"><span class="num">1</span> the stereo setup &amp; the epipolar plane</h2>
+  <p>Two cameras with centres $C$ (left/reference) and $C'$ (right) both see a scene point $X$, giving images $\mathbf x$ and $\mathbf x'$. The five points $C,\,C',\,X,\,\mathbf x,\,\mathbf x'$ all lie on one plane — the <span class="def-term">epipolar plane</span>.</p>
+  <div class="diagram">
+    <h4>epipolar geometry in one picture</h4>
+    <svg viewBox="0 0 460 210">
+      <g font-family="Kalam" font-size="12" fill="var(--ink)">
+        <!-- scene point -->
+        <circle cx="230" cy="20" r="4" fill="var(--pink)" stroke="var(--ink)" stroke-width="1.4"/><text x="238" y="20">X</text>
+        <!-- centres -->
+        <circle cx="70" cy="150" r="4" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.6"/><text x="52" y="168">C</text>
+        <circle cx="390" cy="150" r="4" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.6"/><text x="392" y="168">C'</text>
+        <!-- baseline -->
+        <line x1="70" y1="150" x2="390" y2="150" stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="5 3"/><text x="205" y="165" font-size="11" fill="var(--ink-soft)">baseline</text>
+        <!-- image planes -->
+        <line x1="120" y1="80" x2="120" y2="175" stroke="var(--blue)" stroke-width="2"/>
+        <line x1="340" y1="80" x2="340" y2="175" stroke="var(--blue)" stroke-width="2"/>
+        <!-- rays -->
+        <line x1="70" y1="150" x2="230" y2="20" stroke="var(--coral)" stroke-width="1.4"/>
+        <line x1="390" y1="150" x2="230" y2="20" stroke="var(--coral)" stroke-width="1.4"/>
+        <!-- image points -->
+        <circle cx="120" cy="110" r="3.5" fill="var(--coral)" stroke="var(--ink)" stroke-width="1"/><text x="98" y="106" fill="var(--coral)">x</text>
+        <circle cx="340" cy="110" r="3.5" fill="var(--coral)" stroke="var(--ink)" stroke-width="1"/><text x="345" y="106" fill="var(--coral)">x'</text>
+        <!-- epipoles -->
+        <circle cx="120" cy="150" r="3" fill="var(--mint)" stroke="var(--ink)" stroke-width="1"/><text x="120" y="146" font-size="11" fill="#1e8449">e</text>
+        <circle cx="340" cy="150" r="3" fill="var(--mint)" stroke="var(--ink)" stroke-width="1"/><text x="340" y="146" font-size="11" fill="#1e8449">e'</text>
+        <!-- epipolar lines -->
+        <line x1="120" y1="150" x2="120" y2="95" stroke="#1e8449" stroke-width="1.2"/><text x="124" y="90" font-size="10" fill="#1e8449">l</text>
+        <line x1="340" y1="150" x2="340" y2="95" stroke="#1e8449" stroke-width="1.2"/><text x="330" y="90" font-size="10" fill="#1e8449">l'</text>
+      </g>
+    </svg>
+    <div class="cap">All of X, both centres, and both image points lie in one epipolar plane.</div>
+  </div>
+
+  <!-- 2 epipoles -->
+  <h2 class="section"><span class="num">2</span> epipoles, epipolar lines &amp; the constraint</h2>
+  <p>The line joining the two centres is the <span class="def-term">baseline</span>. Where it pierces each image plane is an <span class="def-term">epipole</span> ($e$, $e'$):</p>
+  <div class="sketch-box tint-mint">
+    <span class="label">🟢 three ways to see an epipole</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>the intersection of the <b>baseline</b> with the image plane;</li>
+      <li>the <b>image of the other camera's centre</b> ($e$ = image of $C'$, $e'$ = image of $C$);</li>
+      <li>the <b>vanishing point of the camera-motion direction</b> (the baseline direction).</li>
+    </ul>
+  </div>
+  <p>An <span class="def-term">epipolar line</span> is where an epipolar plane cuts an image plane; they come in matched pairs $(\mathbf l,\mathbf l')$, and <b>all</b> epipolar lines pass through the epipole. The payoff is the <span class="def-term">epipolar constraint</span>:</p>
+  <div class="bubble"><span class="say">read it as:</span> the match for left-image point $\mathbf x$ must lie on <b>one specific line</b> $\mathbf l'$ in the right image — because the true 3-D point is somewhere on $\mathbf x$'s back-projected ray, and the image of that whole ray is the epipolar line. Search a line, not the whole image. 🔎</div>
+
+  <!-- 3 special cases -->
+  <h2 class="section"><span class="num">3</span> two special configurations</h2>
+  <table class="hand">
+    <thead><tr><th>camera motion</th><th>epipolar lines</th><th>epipoles</th></tr></thead>
+    <tbody>
+      <tr><td>general (converging)</td><td>converge to a point</td><td>finite, inside/near the image</td></tr>
+      <tr><td>pure translation (no rotation)</td><td>all <b>parallel</b> (to the motion)</td><td>at <b>infinity</b></td></tr>
+    </tbody>
+  </table>
+  <p class="small">The parallel case (e.g. a sideways-shifted camera) is what "rectified" stereo rigs engineer on purpose — parallel horizontal epipolar lines make matching a 1-D search along scanlines.</p>
+
+  <!-- 4 fundamental matrix -->
+  <h2 class="section"><span class="num">4</span> deriving the fundamental matrix $F$</h2>
+  <p>Let $P=K[I\mid\mathbf 0]$ and $P'=K'[R\mid\mathbf t]$. Back-project $\mathbf x$ to the point at infinity on its ray, $(K^{-1}\mathbf x,\,0)$, and image it in the right camera — that's a homography, the <span class="def-term">homography at infinity</span> $H_\infty=K'RK^{-1}$. The right image point is $\mathbf x'=H_\infty\mathbf x$, and the epipolar line joins it to the epipole $e'$:</p>
+  <div class="eqn">$$ \mathbf l'=\mathbf e'\times\mathbf x'=[\mathbf e']_\times H_\infty\,\mathbf x = F\,\mathbf x $$</div>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">fundamental matrix</div>
+      <div class="eqn" style="margin:6px 0;">$$ F=[\mathbf e']_\times\,K'RK^{-1} $$</div>
+    </div>
+  </div>
+  <p class="small">Here $[\mathbf e']_\times$ is the <b>skew-symmetric matrix</b> that does "cross product with $\mathbf e'$":</p>
+  <div class="eqn">$$ [\mathbf e']_\times=\begin{bmatrix}0&-e_z&e_y\\ e_z&0&-e_x\\ -e_y&e_x&0\end{bmatrix} $$</div>
+  <p><b>What $F$ does:</b> feed it a point $\mathbf x$ in the left image, out comes the epipolar line $\mathbf l'=F\mathbf x$ in the right image. (Turning a point into a line is called a <i>correlation</i>.)</p>
+
+  <!-- 5 fundamental relationship -->
+  <h2 class="section"><span class="num">5</span> the fundamental relationship</h2>
+  <p>Since the match $\mathbf x'$ lies on $\mathbf l'=F\mathbf x$, point-on-line ($\mathbf x'^{T}\mathbf l'=0$) gives the single most important equation in two-view geometry:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the epipolar constraint</div>
+      <div class="eqn" style="margin:6px 0;">$$ \mathbf x'^{T}\,F\,\mathbf x=0 $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> for <i>every</i> pair of corresponding points, this holds. It needs <b>no</b> knowledge of the 3-D point — just the two image points and $F$. Swap the cameras and the fundamental matrix becomes $F^{T}$.</div>
+  <p class="small">The epipoles are the images of the centres: $\mathbf e'=K'\mathbf t$ (image of $C$) and $\mathbf e=K R^{T}\mathbf t$ (image of $C'$, up to sign).</p>
+
+  <!-- 6 essential matrix -->
+  <h2 class="section"><span class="num">6</span> the essential matrix (calibrated cameras)</h2>
+  <p>If the cameras are <span class="def-term">calibrated</span> ($K$, $K'$ known), pre-multiply the pixels by $K^{-1}$ to work in normalized coordinates. Then $F$ collapses to the simpler <span class="def-term">essential matrix</span>:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">essential matrix</div>
+      <div class="eqn" style="margin:6px 0;">$$ E=[\mathbf t]_\times R,\qquad \mathbf x'^{T}E\,\mathbf x=0\ \ (\text{normalized}) $$</div>
+    </div>
+  </div>
+  <p class="small">$E$ depends only on the relative pose $(R,\mathbf t)$ — no intrinsics — which is exactly what you need to recover the cameras' motion. ($F=K'^{-T}E\,K^{-1}$.)</p>
+
+  <div class="banner">
+    <h3>two views ⇒ your match lives on an epipolar line: $\mathbf l'=F\mathbf x$, and $\mathbf x'^{T}F\mathbf x=0$ always.</h3>
+    <p>epipoles = images of the other centre; $F=[\mathbf e']_\times K'RK^{-1}$; calibrated ⇒ essential matrix $E=[\mathbf t]_\times R$.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>What is an epipole, in three equivalent phrasings?
+        <div class="ans">baseline ∩ image plane = image of the other camera's centre = vanishing point of the camera-motion direction</div></li>
+      <li>Why does the epipolar constraint reduce stereo matching from a 2-D to a 1-D search?
+        <div class="ans">a left point's match is forced onto its single epipolar line $\mathbf l'=F\mathbf x$ in the right image</div></li>
+      <li>Write the fundamental relationship for corresponding points $\mathbf x\leftrightarrow\mathbf x'$.
+        <div class="ans">$\mathbf x'^{T}F\mathbf x=0$</div></li>
+      <li>How does the essential matrix differ from the fundamental matrix?
+        <div class="ans">$E=[\mathbf t]_\times R$ is for calibrated (normalized) cameras — it encodes only relative pose $R,\mathbf t$, no intrinsics</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 16 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l17">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--pink)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 17</div>
+    <h2>Stereo Geometry — Part II</h2>
+    <div class="lsub">computing F from cameras · the properties of F · worked problems (epipolar lines &amp; epipoles)</div>
+  </div>
+
+  <div class="sticky pink">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Lecture 16 introduced $F$. Now we get practical: <b>how to compute it</b> from camera matrices, its key <b>properties</b> (rank-2, null-vectors = epipoles, 7 DOF), and how to <mark>solve exam problems</mark> — epipolar lines and epipoles, even when only $F$ is given.</p>
+  </div>
+
+  <!-- 1 computing F -->
+  <h2 class="section"><span class="num">1</span> computing $F$ from the cameras</h2>
+  <p><b>Canonical case</b> — reference camera $P=[I\mid\mathbf 0]$ and second camera $P'=[M\mid\mathbf m]$:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">canonical formula</div>
+      <div class="eqn" style="margin:6px 0;">$$ F=[\mathbf m]_\times\,M $$</div>
+    </div>
+  </div>
+  <p class="small">(and the essential matrix is the special case $E=[\mathbf t]_\times R$ when $M=R,\ \mathbf m=\mathbf t$).</p>
+  <p><b>General case</b> — two arbitrary cameras $P=[M\mid\mathbf p_4]$, $P'=[M'\mid\mathbf p_4']$: build the <b>homography at infinity</b> $H_\infty=M'M^{-1}$, get the right epipole $\mathbf e'=P'C$ (image of the first centre $C=-M^{-1}\mathbf p_4$), then:</p>
+  <div class="eqn">$$ F=[\mathbf e']_\times\,H_\infty=[\mathbf e']_\times\,M'M^{-1} $$</div>
+
+  <!-- 2 properties -->
+  <h2 class="section"><span class="num">2</span> the properties of $F$ (memorise these)</h2>
+  <div class="sketch-box tint-blue">
+    <span class="label">📋 fundamental-matrix cheat-list</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>Correspondence:</b> $\mathbf x'^{T}F\mathbf x=0$ for every matching pair.</li>
+      <li><b>Point → line:</b> epipolar line in the right image $\mathbf l'=F\mathbf x$; in the left image $\mathbf l=F^{T}\mathbf x'$.</li>
+      <li><b>Transpose swaps cameras:</b> if $F$ is the fundamental matrix of $(P,P')$, then $F^{T}$ is that of $(P',P)$.</li>
+      <li><b>Rank-deficient:</b> $\operatorname{rank}F=2$, so $\det F=0$.</li>
+      <li><b>Epipoles are the null-vectors:</b> $F\mathbf e=\mathbf 0$ ($\mathbf e$ = right null-vector), $\mathbf e'^{T}F=\mathbf 0$ ($\mathbf e'$ = left null-vector). Both epipoles lie on every epipolar line.</li>
+      <li><b>7 degrees of freedom:</b> 9 entries $-1$ (overall scale) $-1$ (the $\det=0$ constraint) $=7$.</li>
+    </ul>
+  </div>
+  <p class="small">Why $F\mathbf e=\mathbf 0$? The left epipole $\mathbf e$ is the image of $C'$; its "match" is $\mathbf e'$ itself, so no proper epipolar line exists at the epipole — the singularity shows up as $F\mathbf e=\mathbf 0$.</p>
+
+  <!-- 3 worked problem -->
+  <h2 class="section"><span class="num">3</span> worked problem — given only $F$</h2>
+  <div class="worked">
+    <span class="tag">given $F$: find epipolar lines for $(5,8)$ &amp; $(7,-5)$, then both epipoles</span>
+    <ol>
+      <li><b>Epipolar lines</b> (right image): homogenise and multiply by $F$ — $\mathbf l_1=F(5,8,1)^{T}$, $\mathbf l_2=F(7,-5,1)^{T}$.</li>
+      <li><b>Right epipole</b> $\mathbf e'$: all epipolar lines meet at it, so intersect two of them — $\mathbf e'=\mathbf l_1\times\mathbf l_2$ (rescale the big numbers; the professor's example gives $\mathbf e'\propto(1,3,1)$).</li>
+      <li><b>Left epipole</b> $\mathbf e$: it's the <b>right null-vector</b> of $F$ — solve $F\mathbf e=\mathbf 0$ (drop one dependent row since $\operatorname{rank}F=2$, set the scale to 1, solve the $2\times2$ system).</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">Equivalently, $\mathbf e'$ = right null-vector of $F^{T}$ (same "drop a row and solve" trick). Two routes, same epipole. ✅</p>
+  </div>
+  <div class="bubble"><span class="say">the pattern to remember:</span> point→line uses $F$ (or $F^{T}$); line→epipole uses a cross product; epipole-from-$F$-alone uses the null-space. Everything is either a multiply, a cross product, or a null-vector.</div>
+
+  <div class="banner">
+    <h3>$F$ is rank-2 with the epipoles as its null-vectors; compute it as $[\mathbf m]_\times M$ (or $[\mathbf e']_\times H_\infty$).</h3>
+    <p>$\mathbf l'=F\mathbf x$, $\mathbf l=F^{T}\mathbf x'$; epipole = intersection of two epipolar lines = null-space of $F$ / $F^{T}$; 7 DOF.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>For the canonical pair $P=[I\mid\mathbf 0]$, $P'=[M\mid\mathbf m]$, what is $F$?
+        <div class="ans">$F=[\mathbf m]_\times M$</div></li>
+      <li>Why is $\det F=0$, and what are the null-vectors of $F$?
+        <div class="ans">$F$ has rank 2 (rank-deficient); its right null-vector is the left epipole $\mathbf e$ ($F\mathbf e=0$), and $\mathbf e'^{T}F=0$ for the right epipole</div></li>
+      <li>You have $F$ and two left-image points. How do you get the right epipole $\mathbf e'$?
+        <div class="ans">compute two epipolar lines $\mathbf l_i=F\mathbf x_i$ and intersect them: $\mathbf e'=\mathbf l_1\times\mathbf l_2$</div></li>
+      <li>How many degrees of freedom does $F$ have?
+        <div class="ans">7 — nine entries minus scale minus the $\det F=0$ constraint</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 17 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l18">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--mint)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 18</div>
+    <h2>Stereo Geometry — Part III</h2>
+    <div class="lsub">the essential matrix · pure-translation stereo · depth from disparity · reducing any rig to parallel</div>
+  </div>
+
+  <div class="sticky mint">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Finally, actual <b>depth</b>. In the friendly "parallel" stereo rig, the horizontal <b>shift</b> between a point's two images (its <span class="def-term">disparity</span>) is all you need: <mark class="mint">near things shift a lot, far things barely shift.</mark> One clean formula converts that shift into $Z$.</p>
+  </div>
+
+  <!-- 1 essential recap -->
+  <h2 class="section"><span class="num">1</span> the essential matrix, a bit more</h2>
+  <p>For calibrated cameras, work in normalized coordinates $\mathbf x_c=K^{-1}\mathbf x$. Then $\mathbf x_c'^{T}E\,\mathbf x_c=0$ with $E=[\mathbf t]_\times R$, and it links to $F$ by:</p>
+  <div class="eqn">$$ F=K'^{-T}E\,K^{-1}\qquad\Longleftrightarrow\qquad E=K'^{T}F\,K $$</div>
+  <p class="small">$E$ has only <b>6</b> parameters (3 rotation + 3 translation), minus scale ⇒ <b>5 DOF</b>; like $F$ it is rank-2 ($\det E=0$).</p>
+
+  <!-- 2 pure translation -->
+  <h2 class="section"><span class="num">2</span> the pure-translation rig</h2>
+  <p>If the two cameras differ by <b>translation only</b> ($R=I$), the essential/fundamental matrix collapses to just the epipole's skew matrix:</p>
+  <div class="eqn">$$ F=[\mathbf e']_\times\quad(\text{same camera, } K=K') $$</div>
+  <p>If that translation is along the <b>x-axis</b>, the epipole is $\mathbf e'=(1,0,0)^{T}$ and the constraint $\mathbf x'^{T}F\mathbf x=0$ forces the <b>y-coordinates to be equal</b>:</p>
+  <div class="eqn">$$ [\,x'\ y'\ 1\,]\begin{bmatrix}0&0&0\\0&0&-1\\0&1&0\end{bmatrix}\begin{bmatrix}x\\y\\1\end{bmatrix}=0\ \Rightarrow\ y=y' $$</div>
+  <div class="bubble"><span class="say">read it as:</span> a point and its match sit on the <b>same horizontal scanline</b>. Matching becomes a 1-D search left↔right — the whole reason rectified stereo rigs are built this way. ↔️</div>
+
+  <!-- 3 depth -->
+  <h2 class="section"><span class="num">3</span> depth from disparity</h2>
+  <p>Two identical cameras ($K=K'$), baseline $t_x$ along x, no rotation. Writing the two projections and subtracting gives the horizontal shift, and hence the depth:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the stereo depth equation</div>
+      <div class="eqn" style="margin:6px 0;">$$ x-x'=\frac{f\,t_x}{Z}\ \ \Longrightarrow\ \ Z=\frac{f\,t_x}{x-x'} $$</div>
+      <div class="eqn-note">$\ x-x' = $ <b>disparity</b></div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> depth is <b>inversely</b> proportional to disparity. Big shift ⇒ close; tiny shift ⇒ far (a mountain barely shifts as you move your head). You only need the two images + the rig's $f,\,t_x$.</div>
+  <div class="worked">
+    <span class="tag">worked example — computing Z</span>
+    <p style="margin:2px 0;">$K=\operatorname{diag}(6,6,1)$ (so $f=6$), baseline $t_x=\tfrac{10}{6}$ (so $ft_x=10$). Left point $(6,8)$, right point $(9.33,8)$ — note $y$ matches, confirming the translation case.</p>
+    <ol>
+      <li>Disparity $=x-x'=6-9.33=-3.33$ (use magnitude $3.33$).</li>
+      <li>$Z=\dfrac{f\,t_x}{|x-x'|}=\dfrac{10}{3.33}=\mathbf{3}$. ✅</li>
+    </ol>
+  </div>
+
+  <!-- 4 general to parallel -->
+  <h2 class="section"><span class="num">4</span> any rig → a parallel rig</h2>
+  <p>Real cameras also rotate. Trick: introduce an <b>imaginary camera</b> at the same centre but rotated by $R$ so its image plane is parallel to the reference. Warp the right image to it by the <b>rotational homography</b>:</p>
+  <div class="eqn">$$ H=K'R\,K'^{-1}\quad(\text{maps }\mathbf x'\to\mathbf x'_{(2)}) $$</div>
+  <div class="sketch-box tint-blue">
+    <span class="label">🔧 the reduction recipe</span>
+    <ol class="notes" style="margin:4px 0 0;">
+      <li>Compute the rotational homography and warp the right image → now it's a <b>parallel</b> stereo pair.</li>
+      <li>Apply the disparity formula from §3 on the warped correspondences to get $Z$.</li>
+    </ol>
+    <p class="small" style="margin-top:4px;">This "rectify then triangulate" pipeline is how general stereo is turned into the easy horizontal-shift case.</p>
+  </div>
+
+  <div class="banner">
+    <h3>parallel stereo ⇒ matches share a scanline and depth is just $Z=f\,t_x/(x-x')$.</h3>
+    <p>$E=[\mathbf t]_\times R$ (5 DOF); pure translation ⇒ $F=[\mathbf e']_\times$, $y=y'$; rotate-away with a homography to rectify, then triangulate.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>In a parallel (translation-only, x-axis) rig, what's special about a point and its match?
+        <div class="ans">they have the same $y$-coordinate (lie on the same horizontal scanline) → 1-D matching</div></li>
+      <li>Write the depth-from-disparity equation and state the key intuition.
+        <div class="ans">$Z=f t_x/(x-x')$; depth is inversely proportional to disparity — near points shift more</div></li>
+      <li>Cameras $K=\operatorname{diag}(6,6,1)$, $ft_x=10$, matches $(6,8)\leftrightarrow(9.33,8)$. Find $Z$.
+        <div class="ans">disparity $=3.33$, so $Z=10/3.33=3$</div></li>
+      <li>How do you get depth from a general (rotated) stereo pair?
+        <div class="ans">warp one view by the rotational homography $H=K'RK'^{-1}$ to make the pair parallel (rectify), then apply the disparity formula</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 18 notes ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+<div class="page" id="l19">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:120px; right:42px;" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+
+  <div class="lec-divider">
+    <div class="lno">LECTURE 19</div>
+    <h2>Stereo Geometry — Part IV</h2>
+    <div class="lsub">estimating F from point matches — the 8-point algorithm &amp; why you must normalize</div>
+  </div>
+
+  <div class="sticky">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>So far we <i>knew</i> the cameras and computed $F$. In the real world we only have <b>two photos</b> and some matched points. Good news: each match gives a <b>linear equation</b> in $F$'s entries, so a handful of matches pins $F$ down — the <mark>8-point algorithm.</mark></p>
+    <p class="small">One catch that ruins naive implementations: <b>numerical scaling</b>. We'll fix it with normalization. ⚖️</p>
+  </div>
+
+  <!-- 1 one equation -->
+  <h2 class="section"><span class="num">1</span> one match → one linear equation</h2>
+  <p>The epipolar constraint $\mathbf x'^{T}F\mathbf x=0$, written out with $\mathbf x=(x,y,1)$ and $\mathbf x'=(x',y',1)$, is <b>linear</b> in the nine unknowns $f_{ij}$:</p>
+  <div class="eqn">$$ x'x\,f_{11}+x'y\,f_{12}+x'f_{13}+y'x\,f_{21}+y'y\,f_{22}+y'f_{23}+x\,f_{31}+y\,f_{32}+f_{33}=0 $$</div>
+  <div class="bubble"><span class="say">read it as:</span> stack $F$'s nine entries into a vector $\mathbf f$; then this is just $(\text{a 9-vector of measured products})\cdot\mathbf f=0$. Every correspondence adds one such row.</div>
+
+  <!-- 2 stack -->
+  <h2 class="section"><span class="num">2</span> stack them: $A\mathbf{f}=\mathbf{0}$ — the 8-point algorithm</h2>
+  <p>With $n$ correspondences you get an $n\times9$ matrix $A$ and solve $A\mathbf f=\mathbf 0$. Two standard ways:</p>
+  <div class="sketch-box tint-blue">
+    <span class="label">🧮 solving for $\mathbf f$</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li><b>Homogeneous:</b> minimise $\lVert A\mathbf f\rVert$ subject to $\lVert\mathbf f\rVert=1$ → smallest right-singular vector of $A$ (SVD). Needs $\ge 8$ points.</li>
+      <li><b>Non-homogeneous:</b> fix $f_{33}=1$, move it to the right → $A'\mathbf f'=\mathbf b$ (with $\mathbf b=-\mathbf 1$). With exactly 8 points, $\mathbf f'=A'^{-1}\mathbf b$; with more, least-squares $\mathbf f'=(A'^{T}A')^{-1}A'^{T}\mathbf b$ (pseudo-inverse).</li>
+    </ul>
+    <p style="margin-top:6px;">Either way the <b>minimum is 8 correspondences</b> — hence the <span class="def-term">8-point algorithm</span>.</p>
+  </div>
+
+  <!-- 3 rank constraint -->
+  <h2 class="section"><span class="num">3</span> don't forget: $F$ must be rank-2</h2>
+  <p>The plain 8-point solution ignores the constraint $\det F=0$, so it returns a <i>full-rank</i> (invalid) $F$. Because $F$ genuinely has only <b>7 DOF</b> (9 − scale − rank), you either enforce singularity afterwards (project the estimate to the nearest rank-2 matrix via SVD — covered next lecture) or use a <b>7-point</b> method that builds the $\det=0$ constraint in from the start.</p>
+
+  <!-- 4 normalization -->
+  <h2 class="section"><span class="num">4</span> the crucial fix — normalization</h2>
+  <div class="sketch-box tint-pink">
+    <span class="label">⚠️ why raw pixels give garbage</span>
+    <p style="margin:2px 0;">The rows of $A$ mix <b>products</b> like $x'x$ (up to $\sim100\times100=10{,}000$) with plain terms like $x$ ($\sim100$) and the constant $1$. That's <b>3–4 orders of magnitude</b> of spread → an ill-conditioned $A$ → a numerically poor $F$.</p>
+  </div>
+  <p>Fix it exactly like the homography DLT: translate each image's points to have their centroid at the origin and scale them small (roughly average distance $\sqrt2$). Call these maps $T$ (left) and $T'$ (right), so $\mathbf y=T\mathbf x$, $\mathbf y'=T'\mathbf x'$. Estimate $\tilde F$ on the well-behaved $\mathbf y$'s, then undo the transforms:</p>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">normalized 8-point algorithm</div>
+      <div class="eqn" style="margin:6px 0;">$$ \tilde F=\text{(8-point on }\mathbf y,\mathbf y'),\qquad F=T'^{T}\,\tilde F\,T $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">why $F=T'^{T}\tilde F T$:</span> from $\mathbf y'^{T}\tilde F\mathbf y=0$ substitute $\mathbf y=T\mathbf x,\ \mathbf y'=T'\mathbf x'$ ⇒ $\mathbf x'^{T}(T'^{T}\tilde F T)\mathbf x=0$, so the bracket is the original $F$. This <b>normalized 8-point algorithm</b> is the one everyone actually uses. ✅</div>
+
+  <div class="banner">
+    <h3>each match gives one linear equation in $F$; ≥ 8 matches + SVD solve it — but normalize first.</h3>
+    <p>$A\mathbf f=\mathbf 0$ (n×9); enforce rank-2 (det $F=0$, 7 DOF); normalize with $T,T'$ then de-normalize $F=T'^{T}\tilde F T$.</p>
+  </div>
+
+  <div class="quiz">
+    <ol>
+      <li>How many independent linear equations does one point correspondence give for estimating $F$, and how many for the whole matrix?
+        <div class="ans">1 equation per correspondence; $F$ has 8 effective unknowns (scale-free) → minimum 8 correspondences</div></li>
+      <li>The basic 8-point solution violates which property of $F$, and how is it fixed?
+        <div class="ans">it ignores $\det F=0$ (rank-2); fix by projecting to the nearest rank-2 matrix via SVD (or use the 7-point method)</div></li>
+      <li>Why must the points be normalized before the 8-point algorithm?
+        <div class="ans">raw coordinate products span 3–4 orders of magnitude, making $A$ ill-conditioned and $F$ inaccurate</div></li>
+      <li>You estimated $\tilde F$ on normalized points $\mathbf y=T\mathbf x$, $\mathbf y'=T'\mathbf x'$. How do you recover the real $F$?
+        <div class="ans">$F=T'^{T}\tilde F\,T$</div></li>
+    </ol>
+  </div>
+  <div class="signoff">— end of Lecture 19 · end of Week 4 ✏️🎉</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+</div>
+
+</body>
+</html>

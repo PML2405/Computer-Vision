@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Discriminative Mindset — Handwritten Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EC;
+    --rule:#E2D9C4;
+    --margin:#F3B8B0;
+    --ink:#2E2A3D;
+    --ink-soft:#5b5678;
+    --yellow:#FFE98A;
+    --pink:#FFB8CE;
+    --mint:#A9E8CE;
+    --blue:#A9D4F5;
+    --coral:#FF7A5C;
+    --tape1:#F6C89F;
+    --tape2:#CBE7DE;
+    --tape3:#F3AEBB;
+  }
+
+  * { box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:#DDD6C4;
+  }
+
+  body{
+    font-family:'Kalam', cursive;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 12px 80px;
+  }
+
+  /* hand-jitter filter for sketchy borders */
+  svg.defs{ position:absolute; width:0; height:0; }
+
+  .page{
+    position:relative;
+    width:100%;
+    max-width:900px;
+    background:
+      repeating-linear-gradient(
+        var(--paper) 0px, var(--paper) 33px,
+        var(--rule) 34px, var(--paper) 35px
+      );
+    background-color:var(--paper);
+    border-radius:6px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.25), 0 2px 0 rgba(0,0,0,.05);
+    padding:46px 40px 46px 70px;
+    overflow:hidden;
+  }
+
+  .margin-rule{
+    position:absolute;
+    top:0; bottom:0; left:46px;
+    width:2px;
+    background:var(--margin);
+    opacity:.75;
+  }
+
+  /* ---------- decorative doodles ---------- */
+  .doodle{ position:absolute; opacity:.85; pointer-events:none; }
+
+  /* ---------- headings ---------- */
+  h1.title{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:56px;
+    margin:0 0 2px 0;
+    line-height:1;
+    color:var(--ink);
+    display:inline-block;
+    position:relative;
+  }
+  .title-wrap{ text-align:center; margin-bottom:6px; position:relative;}
+  .subtitle{
+    text-align:center;
+    font-size:18px;
+    color:var(--ink-soft);
+    margin-top:2px;
+    margin-bottom:26px;
+  }
+  .underline-scribble{
+    display:block;
+    width:340px;
+    max-width:80%;
+    height:14px;
+    margin:2px auto 0;
+  }
+
+  h2.section{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:32px;
+    margin:34px 0 10px 0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  h2.section .num{
+    font-family:'Kalam',cursive;
+    font-size:15px;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:50%;
+    width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    transform:rotate(-6deg);
+  }
+
+  p{ font-size:17px; line-height:1.65; margin:8px 0; }
+  .small{ font-size:14.5px; color:var(--ink-soft); }
+
+  /* ---------- sticky note ---------- */
+  .sticky{
+    position:relative;
+    background:var(--yellow);
+    padding:18px 20px 20px;
+    border-radius:2px 14px 3px 12px / 10px 3px 14px 4px;
+    filter:url(#rough);
+    transform:rotate(-1.3deg);
+    box-shadow: 4px 6px 10px rgba(0,0,0,.14);
+    margin:18px auto 30px;
+    max-width:640px;
+  }
+  .sticky::before{
+    content:"";
+    position:absolute;
+    top:-14px; left:50%;
+    width:46px; height:20px;
+    background:var(--tape3);
+    opacity:.85;
+    transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 3px rgba(0,0,0,.15);
+  }
+  .sticky p{ margin:4px 0; font-size:16.5px; }
+  .sticky .lead{
+    font-family:'Caveat', cursive;
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  /* ---------- generic sketch box ---------- */
+  .sketch-box{
+    position:relative;
+    border:2.6px solid var(--ink);
+    border-radius:225px 15px 225px 15px/15px 225px 15px 225px;
+    filter:url(#rough);
+    padding:18px 22px;
+    background:#FFFEFA;
+    margin:16px 0;
+  }
+  .sketch-box.tint-blue{ background:#EFF7FF; }
+  .sketch-box.tint-mint{ background:#F1FAF5; }
+  .sketch-box.tint-pink{ background:#FFF3F6; }
+
+  /* highlighter marker span */
+  mark{
+    background:linear-gradient(180deg, transparent 55%, var(--pink) 55%);
+    padding:0 2px;
+  }
+  mark.yellow{ background:linear-gradient(180deg, transparent 55%, var(--yellow) 55%); }
+  mark.mint{ background:linear-gradient(180deg, transparent 55%, var(--mint) 55%); }
+
+  /* ---------- equation card ---------- */
+  .eq-card{
+    display:flex;
+    flex-wrap:wrap;
+    gap:22px;
+    align-items:flex-start;
+    justify-content:center;
+    margin:20px 0;
+  }
+  .index-card{
+    background:#fff;
+    border:2.5px solid var(--ink);
+    filter:url(#rough);
+    border-radius:8px 16px 10px 18px/14px 8px 16px 10px;
+    padding:16px 22px;
+    min-width:230px;
+    box-shadow:3px 5px 0 rgba(0,0,0,.08);
+    transform:rotate(-0.6deg);
+  }
+  .index-card .eq{
+    font-family:'Caveat', cursive;
+    font-size:30px;
+    text-align:center;
+    font-weight:700;
+  }
+  .index-card ul{ list-style:none; padding:0; margin:8px 0 0; font-size:16px; }
+  .index-card li{ margin:4px 0; display:flex; justify-content:space-between; }
+  .index-card li.winner{ color:#B4590E; font-weight:700; }
+
+  /* speech bubble */
+  .bubble{
+    position:relative;
+    background:var(--blue);
+    border:2.4px solid var(--ink);
+    filter:url(#rough);
+    border-radius:22px;
+    padding:14px 20px;
+    max-width:480px;
+    margin:18px auto;
+    font-size:16.5px;
+  }
+  .bubble:after{
+    content:"";
+    position:absolute;
+    left:38px; bottom:-16px;
+    width:0; height:0;
+    border:14px solid transparent;
+    border-top-color:var(--blue);
+    filter:drop-shadow(0 2px 0 var(--ink));
+  }
+
+  /* ---------- architecture cards ---------- */
+  .arch-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:22px;
+    margin:22px 0 10px;
+  }
+  .arch-card{
+    border:2.6px solid var(--ink);
+    filter:url(#rough);
+    border-radius:18px 10px 18px 10px/10px 18px 10px 18px;
+    padding:14px 16px 18px;
+    background:#fff;
+  }
+  .arch-card h3{
+    font-family:'Caveat', cursive;
+    font-size:26px;
+    margin:0 0 4px;
+  }
+  .arch-card .tag{
+    display:inline-block;
+    font-size:13px;
+    padding:2px 10px;
+    border-radius:10px;
+    margin-bottom:8px;
+    color:var(--ink);
+    font-family:'Kalam',cursive;
+  }
+  .tag.mlp{ background:var(--pink); }
+  .tag.cnn{ background:var(--mint); }
+  .tag.rnn{ background:var(--blue); }
+  .arch-card p{ font-size:14.5px; margin:6px 0; }
+  .arch-card svg{ width:100%; height:auto; display:block; margin:6px 0; }
+
+  /* ---------- comparison table ---------- */
+  table.hand{
+    width:100%;
+    border-collapse:collapse;
+    margin:18px 0;
+    font-size:15.5px;
+  }
+  table.hand th, table.hand td{
+    border:2px solid var(--ink);
+    padding:9px 10px;
+    text-align:left;
+  }
+  table.hand thead th{
+    background:var(--yellow);
+    font-family:'Caveat',cursive;
+    font-size:19px;
+  }
+  table.hand tbody tr:nth-child(1) td:first-child{ background:var(--pink); }
+  table.hand tbody tr:nth-child(2) td:first-child{ background:var(--mint); }
+  table.hand tbody tr:nth-child(3) td:first-child{ background:var(--blue); }
+
+  /* ---------- takeaway banner ---------- */
+  .banner{
+    position:relative;
+    background:var(--coral);
+    color:#FFF7F0;
+    border-radius:16px;
+    filter:url(#rough);
+    padding:22px 26px;
+    text-align:center;
+    margin:34px 0 26px;
+    transform:rotate(0.4deg);
+  }
+  .banner h3{
+    font-family:'Caveat', cursive;
+    font-size:30px;
+    margin:0 0 6px;
+    line-height:1.25;
+  }
+  .banner p{ color:#FFF0E8; font-size:15px; margin:0; }
+
+  /* ---------- quiz card ---------- */
+  .quiz{
+    border:2.6px dashed var(--ink);
+    border-radius:14px;
+    padding:18px 22px;
+    background:#FFFDF3;
+    margin:22px 0 6px;
+    position:relative;
+  }
+  .quiz:before{
+    content:"✎ quick check";
+    position:absolute;
+    top:-14px; left:18px;
+    background:var(--paper);
+    padding:0 8px;
+    font-family:'Caveat', cursive;
+    font-size:20px;
+    font-weight:700;
+  }
+  .quiz ol{ margin:6px 0 0; padding-left:22px; font-size:16px; }
+  .quiz li{ margin:10px 0; }
+  .quiz .ans{ color:#2E7D53; font-weight:700; }
+  .quiz .ans:before{ content:"→ "; }
+
+  .signoff{
+    text-align:right;
+    font-family:'Caveat', cursive;
+    font-size:20px;
+    color:var(--ink-soft);
+    margin-top:26px;
+  }
+
+  @media (max-width:640px){
+    .page{ padding:36px 20px 36px 46px; }
+    .margin-rule{ left:24px; }
+    h1.title{ font-size:42px; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="defs">
+  <defs>
+    <filter id="rough">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.4"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="page">
+  <div class="margin-rule"></div>
+
+  <!-- doodle stars scattered -->
+  <svg class="doodle" style="top:20px; right:36px;" width="34" height="34" viewBox="0 0 24 24">
+    <path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/>
+  </svg>
+  <svg class="doodle" style="bottom:60px; left:52px;" width="26" height="26" viewBox="0 0 24 24">
+    <path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--blue)" opacity="0.8"/>
+  </svg>
+
+  <div class="title-wrap">
+    <h1 class="title">Where Are We Coming From?</h1>
+    <svg class="underline-scribble" viewBox="0 0 340 14" preserveAspectRatio="none">
+      <path d="M4 8 C 60 2, 120 12, 180 6 S 300 2, 336 9" stroke="var(--coral)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="subtitle">the <b>discriminative mindset</b> · Week 1 recap 🧠</div>
+  </div>
+
+  <!-- BIG PICTURE STICKY -->
+  <div class="sticky">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Everything we've built <i>so far</i> learns a <b>mapping</b>: feed it an input → it hands back an output. That's it!</p>
+    <p class="small">This slide sets up <i>why</i> that's not enough for generative AI — so let's really get this "old world" before the flip happens 👇</p>
+  </div>
+
+  <!-- CORE SETUP -->
+  <h2 class="section"><span class="num">1</span> the core setup</h2>
+  <p>we're given a <mark class="yellow">labelled dataset</mark>:</p>
+
+  <div class="index-card" style="margin:10px auto; text-align:center; max-width:420px;">
+    <div class="eq">(x₁,y₁), (x₂,y₂), ..., (xₙ,yₙ)</div>
+  </div>
+
+  <p>🐱 <b>x</b> = input — image, text embedding, feature vector, time-series window... anything!<br>
+     🏷️ <b>y</b> = label/target — a class ("cat") or a number (tomorrow's temperature)</p>
+
+  <p style="text-align:center; font-size:26px;">🐱 &nbsp; 🐶</p>
+  <p class="small" style="text-align:center; margin-top:-4px;">two labelled examples — cat photo (x) paired with label "cat" (y), same for the dog</p>
+
+  <div class="bubble">
+    the model's job: learn <b>Input x → Output y</b>, written more precisely as
+    <div class="eq-card" style="margin-top:8px;">
+      <span style="font-family:'Caveat',cursive; font-size:30px; font-weight:700;">P(y | x)</span>
+    </div>
+    "given that I've seen input <b>x</b>, what's the probability of each possible label <b>y</b>?"
+  </div>
+
+  <!-- WORKED EXAMPLE -->
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="eq" style="font-size:22px;">worked example</div>
+      <p class="small" style="text-align:center; margin:4px 0 8px;">x = an image →</p>
+      <ul>
+        <li class="winner">P(cat | x) &nbsp; ★ <span>0.85</span></li>
+        <li>P(dog | x) <span>0.10</span></li>
+        <li>P(horse | x) <span>0.05</span></li>
+      </ul>
+      <p class="small" style="text-align:center; margin-top:8px;">→ model picks the highest → "cat" ✅</p>
+    </div>
+  </div>
+
+  <!-- KEY DISTINCTION -->
+  <h2 class="section"><span class="num">2</span> why "discriminative"?</h2>
+
+  <div class="sketch-box tint-pink">
+    <p style="font-size:19px; text-align:center;">
+      <mark>they do <b>NOT</b> learn how the data was generated</mark> — only the boundary between classes.
+    </p>
+  </div>
+
+  <p>🚪 <b>the bouncer analogy:</b> a bouncer checking IDs is great at "let in" vs "not let in" — but has zero clue how a driver's license is actually manufactured. that's discriminative learning: draw the decision boundary, don't worry about the generative process behind it.</p>
+
+  <p class="small">👉 this matters because <b>Week 2 onward flips this</b> — generative models try to learn how the data was <i>produced</i>, so they can create brand-new data that looks real!</p>
+
+  <!-- ARCHITECTURE FAMILIES -->
+  <h2 class="section"><span class="num">3</span> three families, same idea</h2>
+  <p class="small">same kind of problem (input → output), just applied to different data shapes:</p>
+
+  <div class="arch-row">
+
+    <!-- MLP -->
+    <div class="arch-card">
+      <span class="tag mlp">tabular / vectors</span>
+      <h3>MLP / Feedforward</h3>
+      <svg viewBox="0 0 260 120">
+        <g stroke="var(--ink)" stroke-width="1.6" fill="none" opacity="0.75">
+          <path d="M50,20 C90,35 90,45 130,55"/>
+          <path d="M50,20 C90,50 90,70 130,90"/>
+          <path d="M50,60 C90,45 90,50 130,55"/>
+          <path d="M50,60 C90,60 90,75 130,90"/>
+          <path d="M50,100 C90,70 90,60 130,55"/>
+          <path d="M50,100 C90,90 90,90 130,90"/>
+          <path d="M130,55 C160,60 160,55 190,60"/>
+          <path d="M130,90 C160,80 160,65 190,60"/>
+        </g>
+        <g fill="var(--pink)" stroke="var(--ink)" stroke-width="2">
+          <circle cx="50" cy="20" r="9"/><circle cx="50" cy="60" r="9"/><circle cx="50" cy="100" r="9"/>
+        </g>
+        <g fill="var(--yellow)" stroke="var(--ink)" stroke-width="2">
+          <circle cx="130" cy="55" r="9"/><circle cx="130" cy="90" r="9"/>
+        </g>
+        <g fill="var(--mint)" stroke="var(--ink)" stroke-width="2">
+          <circle cx="190" cy="60" r="9"/>
+        </g>
+        <text x="205" y="65" font-family="Kalam" font-size="12" fill="var(--ink)">ŷ</text>
+      </svg>
+      <p>fully connected, no loops — great for structured/vector data with no spatial or time relationship to exploit.</p>
+    </div>
+
+    <!-- CNN -->
+    <div class="arch-card">
+      <span class="tag cnn">images</span>
+      <h3>CNN</h3>
+      <svg viewBox="0 0 260 100">
+        <g font-family="Kalam" font-size="10" fill="var(--ink)">
+          <rect x="8" y="30" width="30" height="40" rx="4" fill="#fff" stroke="var(--ink)" stroke-width="1.8"/>
+          <text x="12" y="80" font-size="9">image</text>
+          <path d="M40,50 L58,50" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <rect x="60" y="24" width="24" height="52" rx="4" fill="var(--mint)" stroke="var(--ink)" stroke-width="1.8"/>
+          <text x="58" y="88" font-size="9">conv</text>
+          <path d="M86,50 L104,50" stroke="var(--ink)" stroke-width="1.6"/>
+          <rect x="106" y="30" width="20" height="40" rx="4" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.8"/>
+          <text x="102" y="88" font-size="9">pool</text>
+          <path d="M128,50 L146,50" stroke="var(--ink)" stroke-width="1.6"/>
+          <rect x="148" y="26" width="24" height="48" rx="4" fill="var(--mint)" stroke="var(--ink)" stroke-width="1.8"/>
+          <path d="M174,50 L192,50" stroke="var(--ink)" stroke-width="1.6"/>
+          <rect x="194" y="32" width="18" height="36" rx="4" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.8"/>
+          <path d="M214,50 L232,50" stroke="var(--ink)" stroke-width="1.6"/>
+          <circle cx="242" cy="50" r="10" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.8"/>
+          <text x="234" y="80" font-size="8">softmax</text>
+        </g>
+      </svg>
+      <p>conv → pool, repeated, then flatten → dense → softmax. ends the same place as everyone: P(y|x).</p>
+    </div>
+
+    <!-- RNN -->
+    <div class="arch-card">
+      <span class="tag rnn">sequences / time</span>
+      <h3>RNN / LSTM / GRU</h3>
+      <svg viewBox="0 0 260 110">
+        <g stroke="var(--ink)" stroke-width="1.7" fill="none">
+          <path d="M50,55 L90,55" marker-end="url(#arrow)"/>
+          <path d="M120,55 L160,55" marker-end="url(#arrow)"/>
+          <path d="M190,55 L222,55" marker-end="url(#arrow)"/>
+        </g>
+        <g stroke="var(--ink)" stroke-width="1.5" fill="none" opacity="0.7">
+          <path d="M40,30 C40,10 60,10 60,30"/>
+          <path d="M110,30 C110,10 130,10 130,30"/>
+          <path d="M180,30 C180,10 200,10 200,30"/>
+        </g>
+        <g fill="var(--blue)" stroke="var(--ink)" stroke-width="2">
+          <circle cx="50" cy="55" r="16"/><circle cx="120" cy="55" r="16"/><circle cx="190" cy="55" r="16"/>
+        </g>
+        <circle cx="238" cy="55" r="10" fill="var(--pink)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="42" y="59" font-family="Kalam" font-size="9">L1</text>
+        <text x="112" y="59" font-family="Kalam" font-size="9">L2</text>
+        <text x="182" y="59" font-family="Kalam" font-size="9">L3</text>
+        <text x="218" y="80" font-family="Kalam" font-size="9">out</text>
+      </svg>
+      <p>little loops = <i>memory</i> carried through time steps. essential when order matters (today's weather depends on yesterday's).</p>
+    </div>
+
+  </div>
+
+  <table class="hand">
+    <thead><tr><th>architecture</th><th>best for</th><th>example mapping</th></tr></thead>
+    <tbody>
+      <tr><td>MLP</td><td>tabular / vector data</td><td>features → class or number</td></tr>
+      <tr><td>CNN</td><td>images (grid data)</td><td>image → class ("5" → "5")</td></tr>
+      <tr><td>RNN/LSTM/GRU</td><td>sequences / time-series</td><td>past readings → next prediction</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TAKEAWAY -->
+  <div class="banner">
+    <h3>all three learn P(y|x) — none of them generate x!</h3>
+    <p>discriminative ≠ generative. the pivot starts next slide 🚀</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz">
+    <ol>
+      <li>new image in, will a discriminative model <i>classify</i> it or <i>generate a new one</i>?
+        <div class="ans">classify what's in it, not generate</div>
+      </li>
+      <li>P(y|x) vs P(x) — which is discriminative?
+        <div class="ans">P(y|x)</div>
+      </li>
+      <li>why can't a cat/dog classifier <i>draw</i> a new cat?
+        <div class="ans">it never learned the underlying pixel-pattern distribution of "cat-like" images — only the boundary separating cats from dogs</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="signoff">— end of section 1 notes ✏️</div>
+
+</div>
+</body>
+</html>
