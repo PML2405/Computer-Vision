@@ -1,5 +1,12 @@
 # 📓 Handwritten Study Notes — Reusable Generation Kit
 
+> **📦 Copying this to another subject? Use [`notes-kit/`](notes-kit/).** It's the packaged,
+> portable version of this recipe — bundling the quality playbook, a ready **`template.html`**
+> (the entire design system in one openable file), a style spec, and the PDF tools, and it
+> adds **coding-subject support** (code blocks, dry-run traces, complexity pills). Copy the
+> whole `notes-kit/` folder into any subject's project and start at
+> [`notes-kit/README.md`](notes-kit/README.md). Everything below is the original write-up it was distilled from.
+
 A **subject-independent** recipe for turning raw course material (lecture slides,
 transcripts, textbook chapters, PDFs, your own scribbles) into **"iPad handwritten
 notebook"** style study pages — single, self-contained HTML files that look like a

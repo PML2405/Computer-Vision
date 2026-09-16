@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes Kit — Design System &amp; Starter Template</title>
+
+<!-- ===== FONTS: Caveat (marker/titles) + Kalam (pen/body) + Fira Code (code, coding subjects only) ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ===== KaTeX: crisp math inside the hand-drawn boxes (math subjects). Delete this block for a non-math subject. ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "\\[", right: "\\]", display: true},
+          {left: "$", right: "$", display: false},
+          {left: "\\(", right: "\\)", display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+
+<!-- ===== highlight.js: syntax highlighting for code blocks (CODING subjects only). Delete for non-coding subjects. ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>window.addEventListener("DOMContentLoaded",function(){ if(window.hljs) hljs.highlightAll(); });</script>
+
+<style>
+  :root{
+    --paper:#FBF7EC; --rule:#E2D9C4; --margin:#F3B8B0;
+    --ink:#2E2A3D; --ink-soft:#5b5678;
+    --yellow:#FFE98A; --pink:#FFB8CE; --mint:#A9E8CE; --blue:#A9D4F5;
+    --coral:#FF7A5C; --tape1:#F6C89F; --tape2:#CBE7DE; --tape3:#F3AEBB;
+  }
+  * { box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background:#DDD6C4; }
+  body{
+    font-family:'Kalam', cursive; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:28px 12px 90px;
+  }
+  svg.defs{ position:absolute; width:0; height:0; }
+
+  /* ---------- page shell (ruled paper) ---------- */
+  .page{
+    position:relative; width:100%; max-width:920px;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 33px, var(--rule) 34px, var(--paper) 35px);
+    background-color:var(--paper);
+    border-radius:6px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.25), 0 2px 0 rgba(0,0,0,.05);
+    padding:46px 40px 46px 74px; overflow:hidden; margin-bottom:30px;
+  }
+  .margin-rule{ position:absolute; top:0; bottom:0; left:50px; width:2px; background:var(--margin); opacity:.75; }
+  .doodle{ position:absolute; opacity:.85; pointer-events:none; }
+
+  /* ---------- kit demo helper (NOT part of the notes — delete in real notes) ---------- */
+  .demo-label{ font-family:'Kalam',cursive; font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--coral); border-bottom:2px dotted var(--coral); display:inline-block; margin:34px 0 6px; }
+  .demo-note{ font-size:13px; color:var(--ink-soft); margin:0 0 10px; font-style:italic; }
+
+  /* ---------- cover (series) ---------- */
+  .cover{ text-align:center; padding:14px 10px 8px; }
+  .cover .kicker{ font-family:'Kalam',cursive; font-size:16px; color:var(--ink-soft); letter-spacing:1px; }
+  .cover h1{ font-family:'Caveat',cursive; font-weight:700; font-size:72px; margin:2px 0 0; line-height:.95; }
+  .cover .sub{ font-size:19px; color:var(--ink-soft); margin-top:8px; }
+  .cover .prof{ font-size:15.5px; color:var(--ink-soft); margin-top:4px; font-style:italic;}
+
+  /* ---------- table of contents (series) ---------- */
+  .toc{ margin:22px auto 6px; max-width:640px; }
+  .toc .toc-card{ border:2.6px solid var(--ink); border-radius:225px 15px 225px 15px/15px 225px 15px 225px;
+    filter:url(#rough); background:#FFFEFA; padding:16px 24px; }
+  .toc h3{ font-family:'Caveat',cursive; font-size:26px; margin:0 0 8px; }
+  .toc ol{ margin:0; padding-left:22px; font-size:17px; } .toc li{ margin:6px 0; }
+  .toc a{ color:var(--ink); text-decoration:none; border-bottom:2px dotted var(--ink-soft); }
+  .toc a:hover{ background:var(--yellow); }
+
+  /* ---------- lecture divider ---------- */
+  .lec-divider{ margin:14px 0 6px; padding:14px 22px; position:relative; background:var(--ink); color:var(--paper);
+    border-radius:16px 10px 16px 10px/10px 16px 10px 16px; filter:url(#rough); transform:rotate(-.4deg); }
+  .lec-divider .lno{ font-family:'Kalam',cursive; font-size:14px; letter-spacing:2px; opacity:.85; }
+  .lec-divider h2{ font-family:'Caveat',cursive; font-weight:700; font-size:40px; margin:2px 0 0; line-height:1; }
+  .lec-divider .lsub{ font-size:14.5px; opacity:.9; margin-top:6px; }
+
+  /* ---------- title block + wavy underline ---------- */
+  .title-block{ margin:22px 0 6px; }
+  .title-block h1{ font-family:'Caveat',cursive; font-weight:700; font-size:48px; margin:0; line-height:1; }
+  .title-block .tsub{ font-style:italic; color:var(--ink-soft); font-size:16px; margin-top:2px; }
+  .wavy{ display:block; width:230px; height:12px; }
+
+  /* ---------- headings ---------- */
+  h2.section{ font-family:'Caveat', cursive; font-weight:700; font-size:31px; margin:32px 0 8px 0; display:flex; align-items:center; gap:10px; }
+  h2.section .num{ font-family:'Kalam',cursive; font-size:15px; background:var(--ink); color:var(--paper);
+    border-radius:50%; width:27px; height:27px; min-width:27px; display:flex; align-items:center; justify-content:center; transform:rotate(-6deg); }
+  h3.sub{ font-family:'Caveat',cursive; font-size:24px; margin:18px 0 4px; }
+  p{ font-size:17px; line-height:1.62; margin:8px 0; }
+  ul.notes, ol.notes{ font-size:16.5px; line-height:1.55; } ul.notes li, ol.notes li{ margin:5px 0; }
+  .small{ font-size:14.5px; color:var(--ink-soft); } b, strong{ color:#231f33; }
+
+  /* ---------- sticky note (big-picture TL;DR) ---------- */
+  .sticky{ position:relative; background:var(--yellow); padding:18px 20px 20px;
+    border-radius:2px 14px 3px 12px / 10px 3px 14px 4px; filter:url(#rough);
+    transform:rotate(-1.1deg); box-shadow: 4px 6px 10px rgba(0,0,0,.14); margin:18px auto 30px; max-width:660px; }
+  .sticky.blue{ background:var(--blue); } .sticky.mint{ background:var(--mint); } .sticky.pink{ background:var(--pink); }
+  .sticky::before{ content:""; position:absolute; top:-14px; left:50%; width:48px; height:20px;
+    background:var(--tape3); opacity:.85; transform:translateX(-50%) rotate(-3deg); box-shadow:0 2px 3px rgba(0,0,0,.15); }
+  .sticky p{ margin:4px 0; font-size:16.5px; } .sticky .lead{ font-family:'Caveat', cursive; font-size:24px; font-weight:700; margin-bottom:6px; }
+
+  /* ---------- sketch box (definitions / warnings / key ideas) ---------- */
+  .sketch-box{ position:relative; border:2.6px solid var(--ink); border-radius:225px 15px 225px 15px/15px 225px 15px 225px;
+    filter:url(#rough); padding:16px 22px; background:#FFFEFA; margin:16px 0; }
+  .sketch-box.tint-blue{ background:#EFF7FF; } .sketch-box.tint-mint{ background:#F1FAF5; }
+  .sketch-box.tint-pink{ background:#FFF3F6; } .sketch-box.tint-yellow{ background:#FFFBEC; }
+  .sketch-box .label{ display:inline-block; font-family:'Caveat',cursive; font-size:22px; font-weight:700; margin-bottom:2px; }
+  .def-term{ font-weight:700; color:#231f33; }
+
+  /* highlighter marker */
+  mark{ background:linear-gradient(180deg, transparent 55%, var(--pink) 55%); padding:0 2px; }
+  mark.yellow{ background:linear-gradient(180deg, transparent 55%, var(--yellow) 55%); }
+  mark.mint{ background:linear-gradient(180deg, transparent 55%, var(--mint) 55%); }
+  mark.blue{ background:linear-gradient(180deg, transparent 55%, var(--blue) 55%); }
+
+  /* ---------- equation cards (KaTeX inside) ---------- */
+  .eq-card{ display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; justify-content:center; margin:18px 0; }
+  .index-card{ background:#fff; border:2.5px solid var(--ink); filter:url(#rough);
+    border-radius:8px 16px 10px 18px/14px 8px 16px 10px; padding:14px 22px; min-width:230px;
+    box-shadow:3px 5px 0 rgba(0,0,0,.08); transform:rotate(-0.5deg); }
+  .index-card .cap{ font-family:'Caveat',cursive; font-size:20px; text-align:center; margin:0 0 6px; color:var(--ink-soft); }
+  .index-card .katex{ font-size:1.12em; }
+  .eqn{ text-align:center; margin:14px 0; } .eqn .katex-display{ margin:.3em 0; }
+
+  /* speech bubble — "read the formula out loud" */
+  .bubble{ position:relative; background:var(--blue); border:2.4px solid var(--ink); filter:url(#rough);
+    border-radius:22px; padding:13px 20px; max-width:560px; margin:16px auto; font-size:16.5px; }
+  .bubble:after{ content:""; position:absolute; left:40px; bottom:-16px; width:0; height:0;
+    border:14px solid transparent; border-top-color:var(--blue); filter:drop-shadow(0 2px 0 var(--ink)); }
+  .bubble .say{ font-family:'Caveat',cursive; font-size:20px; font-weight:700; }
+
+  /* worked-example card */
+  .worked{ border:2.6px solid var(--ink); border-left:10px solid var(--coral); border-radius:12px;
+    filter:url(#rough); background:#FFFDF6; padding:14px 20px; margin:18px 0; }
+  .worked .tag{ font-family:'Caveat',cursive; font-size:22px; font-weight:700; color:#B4590E; display:block; margin-bottom:4px; }
+  .worked .illus{ font-size:13px; color:var(--ink-soft); font-style:italic; }
+  .worked ol{ padding-left:20px; } .worked li{ margin:7px 0; font-size:16px; }
+
+  /* figure card (REAL source image) */
+  .fig{ border:2.4px solid var(--ink); background:#fff; filter:url(#rough);
+    border-radius:12px 14px 12px 14px; padding:10px 10px 8px; margin:16px 0; transform:rotate(-.3deg); }
+  .fig img{ width:100%; height:auto; display:block; border-radius:4px; }
+  .fig figcaption{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:7px; font-style:italic; }
+  .illus{ font-size:13px; color:var(--ink-soft); font-style:italic; }
+
+  /* diagram card (redrawn inline SVG) */
+  .diagram{ border:2.6px solid var(--ink); filter:url(#rough); background:#fff;
+    border-radius:18px 10px 18px 10px/10px 18px 10px 18px; padding:14px 16px 10px; margin:18px 0; }
+  .diagram h4{ font-family:'Caveat',cursive; font-size:22px; margin:0 0 6px; }
+  .diagram svg{ width:100%; height:auto; display:block; }
+  .diagram .cap{ font-size:13.5px; color:var(--ink-soft); text-align:center; margin-top:6px; font-style:italic; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:680px){ .two-col{ grid-template-columns:1fr; } }
+
+  /* comparison table */
+  table.hand{ width:100%; border-collapse:collapse; margin:18px 0; font-size:15.5px; }
+  table.hand th, table.hand td{ border:2px solid var(--ink); padding:9px 10px; text-align:left; vertical-align:top; }
+  table.hand thead th{ background:var(--yellow); font-family:'Caveat',cursive; font-size:19px; }
+  table.hand tbody tr:nth-child(odd) td:first-child{ background:#fdf6e6; }
+  table.hand.trace thead th{ background:var(--mint); }   /* dry-run / trace variant */
+
+  /* ===== CODING components ===== */
+  /* code block — a "taped-in printout"; kept crisp (no #rough) for monospace legibility */
+  .code{ position:relative; margin:16px 0; border-radius:10px; border:2.6px solid var(--ink);
+    background:#282c34; box-shadow:3px 6px 0 rgba(0,0,0,.16); overflow:hidden; transform:rotate(-.25deg); }
+  .code .fname{ font-family:'Kalam',cursive; font-size:12.5px; letter-spacing:.5px; background:var(--ink);
+    color:var(--paper); padding:5px 14px; display:flex; justify-content:space-between; align-items:center; }
+  .code .fname .lang{ opacity:.7; font-size:11px; text-transform:uppercase; }
+  .code pre{ margin:0; padding:12px 16px; overflow-x:auto; }
+  .code pre code{ font-family:'Fira Code',ui-monospace,'SFMono-Regular',monospace; font-size:13px; line-height:1.65;
+    background:transparent; padding:0; }
+  code.inline{ font-family:'Fira Code',ui-monospace,monospace; font-size:.9em; background:#efe7d4;
+    border:1px solid var(--rule); border-radius:4px; padding:1px 5px; color:#3a3550; }
+  /* Big-O / complexity pill */
+  .bigO{ display:inline-block; font-family:'Fira Code',monospace; font-size:13px; font-weight:500;
+    background:var(--ink); color:var(--paper); border-radius:20px; padding:2px 12px; margin:0 2px; }
+  .bigO.good{ background:#2E7D53; } .bigO.bad{ background:#B4463C; }
+
+  /* takeaway banner */
+  .banner{ position:relative; background:var(--coral); color:#FFF7F0; border-radius:16px; filter:url(#rough);
+    padding:20px 26px; text-align:center; margin:32px 0 24px; transform:rotate(0.35deg); }
+  .banner h3{ font-family:'Caveat', cursive; font-size:29px; margin:0 0 6px; line-height:1.22; }
+  .banner p{ color:#FFF0E8; font-size:15px; margin:0; }
+
+  /* quiz card */
+  .quiz{ border:2.6px dashed var(--ink); border-radius:14px; padding:18px 22px; background:#FFFDF3; margin:22px 0 6px; position:relative; }
+  .quiz:before{ content:"✎ quick check"; position:absolute; top:-14px; left:18px; background:var(--paper);
+    padding:0 8px; font-family:'Caveat', cursive; font-size:20px; font-weight:700; }
+  .quiz ol{ margin:6px 0 0; padding-left:22px; font-size:16px; } .quiz li{ margin:11px 0; }
+  .quiz .ans{ color:#2E7D53; font-weight:700; } .quiz .ans:before{ content:"→ "; }
+
+  .signoff{ text-align:right; font-family:'Caveat', cursive; font-size:20px; color:var(--ink-soft); margin-top:24px; }
+  .backtop{ display:block; text-align:right; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-top:6px; }
+
+  @media (max-width:640px){
+    .page{ padding:36px 18px 36px 46px; } .margin-rule{ left:26px; }
+    .cover h1{ font-size:52px; } .lec-divider h2{ font-size:30px; } .two-col{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- hand-jitter filter + arrow markers; define ONCE per page -->
+<svg class="defs">
+  <defs>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2"/></filter>
+    <filter id="rough2"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="14" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6"/></filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#2E2A3D" stroke-width="1.5"/></marker>
+  </defs>
+</svg>
+
+<div class="page" id="top">
+  <div class="margin-rule"></div>
+  <svg class="doodle" style="top:18px; right:34px;" width="30" height="30" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 10 L15 14 L17 21 L12 17 L7 21 L9 14 L3 10 L10 9 Z" fill="var(--coral)" opacity="0.85"/></svg>
+
+  <div class="cover">
+    <div class="kicker">NOTES KIT · DESIGN SYSTEM</div>
+    <h1>Component Gallery</h1>
+    <div class="sub"><b>Every building block</b>, rendered — open this file to see the look; <b>view source</b> to copy any component</div>
+    <div class="prof">Duplicate this file, delete the demos, keep the &lt;head&gt; + &lt;style&gt;, and author your notes with these classes.</div>
+  </div>
+
+  <div class="sketch-box tint-yellow">
+    <span class="label">📌 how to use this template</span>
+    <ol class="notes" style="margin:4px 0 0;">
+      <li>Keep the whole <code class="inline">&lt;head&gt;</code> (fonts + KaTeX + highlight.js) and the entire <code class="inline">&lt;style&gt;</code> block — that IS the shared design system. Reuse it identically across every page of a subject.</li>
+      <li>Delete the KaTeX block if the subject has no math; delete the highlight.js block if there's no code.</li>
+      <li>Below is one rendered example of every component. Copy the markup you need, swap in your content. Delete every <span style="color:var(--coral)">CODING / DEMO label</span> in your real notes.</li>
+    </ol>
+  </div>
+
+  <!-- ============ TOC (series only) ============ -->
+  <span class="demo-label">component · table of contents (series only)</span>
+  <div class="toc"><div class="toc-card">
+    <h3>📒 what's inside this week</h3>
+    <ol>
+      <li><a href="#top">Lecture 1 — Topic title</a><br><span class="small">one-line description of what this lecture covers</span></li>
+      <li><a href="#top">Lecture 2 — Topic title</a><br><span class="small">one-line description</span></li>
+    </ol>
+  </div></div>
+
+  <!-- ============ lecture divider ============ -->
+  <span class="demo-label">component · lecture / chapter divider</span>
+  <div class="lec-divider">
+    <div class="lno">LECTURE 1</div>
+    <h2>The Topic Being Taught</h2>
+    <div class="lsub">the sub-themes of this lecture, comma separated</div>
+  </div>
+
+  <!-- ============ title + wavy underline (standalone) ============ -->
+  <span class="demo-label">component · title block + wavy underline (standalone pages)</span>
+  <div class="title-block">
+    <h1>A Standalone Topic Title</h1>
+    <svg class="wavy" viewBox="0 0 230 12"><path d="M2 7 Q20 1 40 7 T80 7 T120 7 T160 7 T200 7 T228 7" fill="none" stroke="var(--coral)" stroke-width="3" stroke-linecap="round"/></svg>
+    <div class="tsub">one-line italic subtitle that frames the topic</div>
+  </div>
+
+  <!-- ============ sticky (big picture) ============ -->
+  <span class="demo-label">component · sticky note — the "big picture, first" (also .blue .mint .pink)</span>
+  <div class="sticky blue">
+    <div class="lead">🧠 the big picture, first</div>
+    <p>Open every topic with one paragraph on <b>why it exists / what problem it solves</b>, before any detail. This is the TL;DR the student reads first.</p>
+  </div>
+
+  <!-- ============ section heading + sketch-box + def-term + mark ============ -->
+  <span class="demo-label">component · numbered section, sketch-box (tints), def-term, highlighter mark</span>
+  <h2 class="section"><span class="num">1</span> a numbered concept section</h2>
+  <p>Body text in Kalam. Define a <span class="def-term">new term</span> in bold the first time it appears, and use a <mark>highlighter swipe</mark> (also <mark class="yellow">yellow</mark>, <mark class="mint">mint</mark>, <mark class="blue">blue</mark>) for the phrase to remember.</p>
+  <div class="sketch-box tint-blue">
+    <span class="label">📖 definition / key idea</span>
+    <p style="margin:2px 0;">The workhorse box. Tints: <code class="inline">tint-blue</code>, <code class="inline">tint-mint</code>, <code class="inline">tint-pink</code> (⚠️ warnings), <code class="inline">tint-yellow</code>.</p>
+  </div>
+
+  <!-- ============ equation cards + bubble (MATH) ============ -->
+  <span class="demo-label">component · MATH — index-card equation + "read it as" bubble</span>
+  <div class="eq-card">
+    <div class="index-card">
+      <div class="cap">the key formula, boxed</div>
+      <div class="eqn" style="margin:6px 0;">$$ E=\sum_{i=1}^{n}\big(y_i-mx_i-c\big)^2 $$</div>
+    </div>
+  </div>
+  <div class="bubble"><span class="say">read it as:</span> put every non-trivial formula in a card, then translate it into plain English right under it — the reader should never meet a symbol they can't say out loud.</div>
+
+  <!-- ============ worked example (MATH) ============ -->
+  <span class="demo-label">component · MATH — worked example (step-by-step, boxed answer)</span>
+  <div class="worked">
+    <span class="tag">✍️ worked example <span class="illus">(use the source's real numbers, or tag "illustrative")</span></span>
+    <ol>
+      <li>State the data / givens.</li>
+      <li>Apply the formula, one algebra step per line.</li>
+      <li>Arrive at the answer: $$ \boxed{y=3x+2} $$</li>
+    </ol>
+  </div>
+
+  <!-- ============ diagram (SVG) beside text ============ -->
+  <span class="demo-label">component · redrawn inline-SVG diagram (curved connectors, highlighter nodes) + two-col</span>
+  <div class="two-col">
+    <div class="diagram">
+      <h4>a pipeline, redrawn</h4>
+      <svg viewBox="0 0 260 90">
+        <g font-family="Kalam" font-size="11" fill="var(--ink)">
+          <rect x="8" y="30" width="66" height="30" rx="6" fill="var(--mint)" stroke="var(--ink)" stroke-width="1.4"/><text x="18" y="49">input</text>
+          <rect x="98" y="30" width="66" height="30" rx="6" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.4"/><text x="112" y="49">process</text>
+          <rect x="188" y="30" width="64" height="30" rx="6" fill="var(--pink)" stroke="var(--ink)" stroke-width="1.4"/><text x="204" y="49">output</text>
+          <path d="M74 45 Q86 40 98 45" fill="none" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M164 45 Q176 40 188 45" fill="none" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        </g>
+      </svg>
+      <div class="cap">nodes = highlighter fill + ink stroke; connectors = curved, never dead-straight.</div>
+    </div>
+    <div>
+      <p>Put the diagram beside its explanation with <code class="inline">.two-col</code>. Always inline SVG — never a rasterized diagram — so it stays crisp and on-palette.</p>
+    </div>
+  </div>
+
+  <!-- ============ real figure ============ -->
+  <span class="demo-label">component · real source figure (embed only when a redraw can't convey it)</span>
+  <figure class="fig">
+    <svg viewBox="0 0 320 90" style="width:100%"><rect width="320" height="90" fill="#e9e3d2"/><text x="160" y="48" font-family="Kalam" font-size="13" fill="var(--ink-soft)" text-anchor="middle">[ real slide image goes here — e.g. a result on a photo ]</text></svg>
+    <figcaption>caption explaining the figure. <span class="illus">(from the source slides)</span></figcaption>
+  </figure>
+
+  <!-- ============ comparison table ============ -->
+  <span class="demo-label">component · hand comparison table (use whenever ≥2 things contrast)</span>
+  <table class="hand">
+    <thead><tr><th>option</th><th>when to use</th><th>cost</th></tr></thead>
+    <tbody>
+      <tr><td><b>Method A</b></td><td>clean data</td><td>cheap</td></tr>
+      <tr><td><b>Method B</b></td><td>noisy / outliers</td><td>pricier</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============ CODE block (CODING) ============ -->
+  <span class="demo-label">component · CODING — code block (highlight.js; keep language class on &lt;code&gt;)</span>
+  <p class="demo-note">Put a filename/label tab on top. Language class drives highlighting (e.g. <code class="inline">language-python</code>).</p>
+  <div class="code">
+    <div class="fname"><span>binary_search.py</span><span class="lang">python</span></div>
+<pre><code class="language-python">def binary_search(a, target):
+    lo, hi = 0, len(a) - 1
+    while lo &lt;= hi:
+        mid = (lo + hi) // 2      # midpoint
+        if a[mid] == target:
+            return mid            # found
+        elif a[mid] &lt; target:
+            lo = mid + 1          # search right half
+        else:
+            hi = mid - 1          # search left half
+    return -1                     # not found
+</code></pre>
+  </div>
+  <p>Reference code inline with <code class="inline">code.inline</code>, e.g. the loop invariant is <code class="inline">a[lo..hi]</code>. Tag complexity with a pill:
+     time <span class="bigO good">O(log n)</span>, space <span class="bigO good">O(1)</span> — and flag a bad one like <span class="bigO bad">O(n²)</span>.</p>
+
+  <!-- ============ dry-run trace (CODING) ============ -->
+  <span class="demo-label">component · CODING — dry-run / trace table (table.hand.trace)</span>
+  <p class="demo-note">Walking real values through the code is the coding equivalent of a worked example. Show every iteration.</p>
+  <table class="hand trace">
+    <thead><tr><th>iter</th><th>lo</th><th>hi</th><th>mid</th><th>a[mid]</th><th>action</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>0</td><td>6</td><td>3</td><td>7</td><td>7 &lt; 9 → lo = 4</td></tr>
+      <tr><td>2</td><td>4</td><td>6</td><td>5</td><td>11</td><td>11 &gt; 9 → hi = 4</td></tr>
+      <tr><td>3</td><td>4</td><td>4</td><td>4</td><td>9</td><td>match → return 4</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============ algorithm walkthrough (CODING) ============ -->
+  <span class="demo-label">component · CODING — algorithm walkthrough (numbered steps + gotchas)</span>
+  <div class="sketch-box tint-mint">
+    <span class="label">⚙️ the algorithm, in words</span>
+    <ol class="notes" style="margin:4px 0 0;">
+      <li>Keep a search window <code class="inline">[lo, hi]</code> over the <b>sorted</b> array.</li>
+      <li>Probe the middle; halve the window toward the target each step.</li>
+      <li>Stop when found, or when the window is empty (<code class="inline">lo &gt; hi</code>).</li>
+    </ol>
+  </div>
+  <div class="sketch-box tint-pink">
+    <span class="label">⚠️ common bugs</span>
+    <ul class="notes" style="margin:4px 0 0;">
+      <li>Array must be <b>sorted</b> — else the halving logic is invalid.</li>
+      <li><code class="inline">(lo+hi)//2</code> can overflow in fixed-int languages → use <code class="inline">lo + (hi-lo)//2</code>.</li>
+      <li>Off-by-one: is the window <code class="inline">[lo, hi]</code> or <code class="inline">[lo, hi)</code>? Keep it consistent.</li>
+    </ul>
+  </div>
+
+  <!-- ============ takeaway banner ============ -->
+  <span class="demo-label">component · takeaway banner (exactly ONE per page — the "so what" sentence)</span>
+  <div class="banner">
+    <h3>the single most important sentence of the page goes here.</h3>
+    <p>a one-line elaboration or the key formula/rule in support.</p>
+  </div>
+
+  <!-- ============ quiz ============ -->
+  <span class="demo-label">component · quiz (exactly ONE per lecture; inline answers, never hidden)</span>
+  <div class="quiz">
+    <ol>
+      <li>Ask a question the page just answered.
+        <div class="ans">the answer, shown inline — these are printed notes, not an app</div></li>
+      <li>Prefer questions that make the reader <i>compute</i> or <i>apply</i>, not just recall.
+        <div class="ans">2–4 questions per lecture (4–6 for memorization-heavy subjects)</div></li>
+    </ol>
+  </div>
+
+  <div class="signoff">— end of section ✏️</div>
+  <a class="backtop" href="#top">↑ back to contents</a>
+
+  <!-- ============ subject-type cheat table ============ -->
+  <span class="demo-label">reference · which components to lean on, by subject type</span>
+  <table class="hand">
+    <thead><tr><th>subject type</th><th>lean on</th></tr></thead>
+    <tbody>
+      <tr><td><b>Mathematical</b></td><td>index-card + bubble for every formula; <b>worked examples</b> (add one if the source only states a result); KaTeX everywhere</td></tr>
+      <tr><td><b>Conceptual / theory</b></td><td>big-picture sticky; def-term for every term; <b>comparison tables</b>; analogies; mnemonic stickies</td></tr>
+      <tr><td><b>Coding / algorithmic</b></td><td><b>code blocks</b> + inline code; <b>dry-run trace</b> tables; complexity pills; algorithm-walkthrough + common-bugs boxes; pipeline diagrams</td></tr>
+      <tr><td><b>Visual / spatial</b></td><td>redrawn SVG diagrams; real figure + redraw side-by-side (two-col); geometry cards</td></tr>
+      <tr><td><b>Memorization</b></td><td>hand tables; mnemonic stickies; a longer quiz (4–6); colour-coded-but-also-labelled categories</td></tr>
+      <tr><td><b>Narrative / history</b></td><td>timeline SVG; cause→effect chains; "turning point" banners; keep chronology</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
