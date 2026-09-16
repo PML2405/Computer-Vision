@@ -16,7 +16,8 @@ computer-vision/
 │   ├── week3_notes.html       ·  Camera Geometry — single view                         (L11–15)
 │   ├── week4_notes.html       ·  Stereo Geometry — epipolar geom. & fundamental matrix (L16–19)
 │   ├── week5_notes.html       ·  Stereo Geometry — estimating F, recovering structure  (L20–23)
-│   └── week6_notes.html       ·  Feature Detection & Description                       (L24–28)
+│   ├── week6_notes.html       ·  Feature Detection & Description                       (L24–28)
+│   └── week7_notes.html       ·  Feature Matching & Model Fitting                      (L29–33)
 │
 ├── source/                    ← original course material (INPUTS, not published — see .gitignore)
 │   ├── slides/                ·  per-week lecture-slide PDFs + the full-course master PDF
